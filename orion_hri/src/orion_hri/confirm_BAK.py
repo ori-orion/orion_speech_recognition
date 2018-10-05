@@ -8,29 +8,35 @@ import actionlib
 from tmc_msgs.msg import TalkRequestAction, TalkRequestGoal, Voice
 from tmc_rosjulius_msgs.msg import RecognitionResult
 
-class Listen(smach.State):
+class Confirm(smach.State):
     """
-    Listen
+    Confirm
 
     """
 
-    def __init__(self, question, valid_sentences):
+    def __init__(self, question, only_question, confirmation_sentences, rejection_sentences):
         smach.State.__init__(self,
-                             outcomes=['succeeded', 'aborted', 'preempted'],
-                             input_keys=[],
-                             output_keys=['argument'])
+                             outcomes=['succeeded', 'not_confirmed', 'aborted', 'preempted'],
+                             input_keys=['argument', 'objects'],
+                             output_keys=['argument', 'objects'])
 
         self.question = question
-        self.valid_sentences = valid_sentences
+        self.only_question = only_question
+        self.confirmation_sentences = confirmation_sentences
+        self.rejection_sentences = rejection_sentences
+        self.isConfirmed = False
+        self.isRejected = False
+        
         self.speaker=actionlib.SimpleActionClient('talk_request_action', TalkRequestAction)
         rospy.loginfo("Waiting for talk_request_action...")
         self.speaker.wait_for_server()
         rospy.loginfo("Speech action started")
 
-
         self.text_topic = '/hsrb/voice/text'
+
         #rospy.loginfo("Waiting for topic: /hsrb/voice/text")
         #rospy.Subscriber("/hsrb/voice/text", RecognitionResult  , self.callback)
+
         self.rate = rospy.Rate(10)
         
     def say(self, speech):
@@ -48,14 +54,21 @@ class Listen(smach.State):
 
         #print("VALID: " + str(self.valid_sentences))
         #print("DATA: " + str(data.sentences))        
-        
+
+        self.isConfirmed = False
+        self.isRejected = False      
         # filter out invalid sentences
         for i in range(len(data.sentences)):
-            if data.sentences[i] in self.valid_sentences:
+            if data.sentences[i] in self.confirmation_sentences: 
                 sentences.append(data.sentences[i])
                 scores.append(data.scores[i])
+                self.isConfirmed = True
+            elif data.sentences[i] in self.rejection_sentences:
+                sentences.append(data.sentences[i])
+                scores.append(data.scores[i])
+                self.isRejected = True
             else:
-                rospy.loginfo("CMD IGNORE: " +  str(data.sentences[i]))
+                rospy.loginfo("CONFIRM IGNORE: " +  str(data.sentences[i]))
 
         if sentences:
             self.sentence = sentences[0] 
@@ -63,11 +76,21 @@ class Listen(smach.State):
             rospy.loginfo("SENTENCE: " + self.sentence + " , SCORE: " +  str(self.score))
         
     def execute(self, userdata):
-        rospy.loginfo("Listen")
-        self.sentence = None
+        rospy.loginfo("Confirm")
 
+        sentences = []
+        scores = []
+
+        self.isConfirmed = False
+        self.isRejected = False      
+
+        self.sentence = None
         while self.sentence == None:
-            self.say(self.question)
+            if self.only_question:
+                self.say(self.question)
+            else:
+                self.say(self.question + str(userdata.argument) + '?')
+
             data = RecognitionResult()
             try:
                 rospy.loginfo('Waiting for speech input: %s', self.text_topic)
@@ -76,16 +99,19 @@ class Listen(smach.State):
             except rospy.ROSException, e:
                 rospy.logwarn("Failed to get speech input from %s" % self.text_topic)
 
-            sentences = []
-            scores = []
-
+                
+            rospy.loginfo("Waiting for speech input...")
             for i in range(len(data.sentences)):
-                if data.sentences[i] in self.valid_sentences:
+                if data.sentences[i] in self.confirmation_sentences: 
                     sentences.append(data.sentences[i])
                     scores.append(data.scores[i])
+                    self.isConfirmed = True
+                elif data.sentences[i] in self.rejection_sentences:
+                    sentences.append(data.sentences[i])
+                    scores.append(data.scores[i])
+                    self.isRejected = True
                 else:
-                    rospy.loginfo("CMD IGNORE: " +  str(data.sentences[i]))
-                    #
+                    rospy.loginfo("CONFIRM IGNORE: " +  str(data.sentences[i]))
 
             if sentences:
                 self.sentence = sentences[0] 
@@ -93,8 +119,16 @@ class Listen(smach.State):
                 rospy.loginfo("SENTENCE: " + self.sentence + " , SCORE: " +  str(self.score))
             else:
                 self.say("I didn't quite get that. Can you please say that again?")
-
-        userdata.argument = self.sentence.split(' ')[-1]
+                
+            
         self.say("I understood: " +  self.sentence)
-        
-        return 'succeeded'
+
+        if self.isConfirmed:
+            if userdata.argument not in userdata.objects:
+                userdata.objects.append(userdata.argument)
+            return 'succeeded'
+        elif self.isRejected:
+            return 'not_confirmed'
+        else: # should never get here...
+            rospy.logerror('Something went wrong...')
+            return 'aborted'

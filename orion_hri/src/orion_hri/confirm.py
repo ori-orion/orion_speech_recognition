@@ -5,8 +5,39 @@ import smach_ros
 
 import actionlib
 
-from tmc_msgs.msg import TalkRequestAction, TalkRequestGoal, Voice
-from tmc_rosjulius_msgs.msg import RecognitionResult
+from orion_hri.hri import HRI
+
+class ConfirmInput(smach.State):
+    """
+    ConfirmInput
+
+    """
+
+    def __init__(self, question, positive_ex, negative_ex):
+        smach.State.__init__(self,
+                             outcomes=['succeeded', 'not_confirmed', 'aborted', 'preempted'],
+                             input_keys=['argument','objects'],
+                             output_keys=['argument','objects'])
+
+        self.question = question
+        self.positive_ex = positive_ex
+        self.negative_ex = negative_ex
+        
+        self.hri = HRI()
+
+            
+    def execute(self, userdata):
+        rospy.loginfo("Confirm")
+
+        is_confirmed = self.hri.confirm(self.question  + str(userdata.argument) + '?', self.positive_ex, self.negative_ex)
+
+        if is_confirmed:
+            if userdata.argument not in userdata.objects:
+                userdata.objects.append(userdata.argument)
+            return 'succeeded'
+        return 'not_confirmed'
+
+
 
 class Confirm(smach.State):
     """
@@ -14,90 +45,28 @@ class Confirm(smach.State):
 
     """
 
-    def __init__(self, question, only_question, confirmation_sentences, rejection_sentences):
+    def __init__(self, question, positive_ex, negative_ex):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'not_confirmed', 'aborted', 'preempted'],
-                             input_keys=['argument', 'objects'],
-                             output_keys=['argument', 'objects'])
+                             input_keys=['argument','objects'],
+                             output_keys=['argument','objects'])
 
         self.question = question
-        self.only_question = only_question
-        self.confirmation_sentences = confirmation_sentences
-        self.rejection_sentences = rejection_sentences
-        self.isConfirmed = False
-        self.isRejected = False
+        self.positive_ex = positive_ex
+        self.negative_ex = negative_ex
         
-        self.speaker=actionlib.SimpleActionClient('talk_request_action', TalkRequestAction)
-        rospy.loginfo("Waiting for talk_request_action...")
-        self.speaker.wait_for_server()
-        rospy.loginfo("Speech action started")
-
-        rospy.loginfo("Waiting for topic: /hsrb/voice/text")
-        rospy.Subscriber("/hsrb/voice/text", RecognitionResult  , self.callback)
-
-        self.rate = rospy.Rate(10)
-        
-    def say(self, speech):
-        print speech
-        talk_goal = TalkRequestGoal()
-        talk_goal.data.language = Voice.kEnglish
-        talk_goal.data.sentence = speech
-        self.speaker.send_goal(talk_goal)
-        self.speaker.wait_for_result()
-        
-    def callback(self, data):
-
-        sentences = []
-        scores = []
-
-        #print("VALID: " + str(self.valid_sentences))
-        #print("DATA: " + str(data.sentences))        
-
-        self.isConfirmed = False
-        self.isRejected = False      
-        # filter out invalid sentences
-        for i in range(len(data.sentences)):
-            if data.sentences[i] in self.confirmation_sentences: 
-                sentences.append(data.sentences[i])
-                scores.append(data.scores[i])
-                self.isConfirmed = True
-            elif data.sentences[i] in self.rejection_sentences:
-                sentences.append(data.sentences[i])
-                scores.append(data.scores[i])
-                self.isRejected = True
-            else:
-                rospy.loginfo("CONFIRM IGNORE: " +  str(data.sentences[i]))
-
-        if sentences:
-            self.sentence = sentences[0] 
-            self.score = scores[0]
-            rospy.loginfo("SENTENCE: " + self.sentence + " , SCORE: " +  str(self.score))
-        
-    def execute(self, userdata):
-        rospy.loginfo("Listen")
-
-        self.isConfirmed = False
-        self.isRejected = False      
-
-        self.sentence = None
-        if self.only_question:
-            self.say(self.question)
-        else:
-            self.say(self.question + str(userdata.argument) + '?')
-
-        rospy.loginfo("Waiting for speech input...")
-        while self.sentence == None:
-            self.rate.sleep()
+        self.hri = HRI()
 
             
-        self.say("I understood: " +  self.sentence)
+    def execute(self, userdata):
+        rospy.loginfo("Confirm")
 
-        if self.isConfirmed:
+        is_confirmed = self.hri.confirm(self.question, self.positive_ex, self.negative_ex)
+
+        if is_confirmed:
             if userdata.argument not in userdata.objects:
                 userdata.objects.append(userdata.argument)
             return 'succeeded'
-        elif self.isRejected:
-            return 'not_confirmed'
-        else: # should never get here...
-            rospy.logerror('Something went wrong...')
-            return 'aborted'
+        return 'not_confirmed'
+
+            

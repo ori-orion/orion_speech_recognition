@@ -11,10 +11,6 @@ from orion_hri.setup import Setup
 from orion_hri.listen import Listen
 from orion_hri.confirm import Confirm
 
-from orion_hri.recognize_speech import RecognizeSpeech
-from orion_hri.ask_confirm import AskConfirm
-from orion_hri.ask_help import AskHelp
-from orion_hri.shutdown import Shutdown
 
 import numpy
 import tf
