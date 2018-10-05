@@ -1,0 +1,7 @@
+S : NS_B COMMANDS NS_E
+COMMANDS : bring me something
+COMMANDS : tidy up a room
+COMMANDS : tidy up the LOCATION
+COMMANDS : bring me the OBJECT
+COMMANDS : yes please 
+COMMANDS : no thanks
