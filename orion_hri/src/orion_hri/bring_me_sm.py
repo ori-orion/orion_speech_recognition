@@ -18,20 +18,57 @@ class BringMeSM(smach.StateMachine):
         obj_question = "What can I bring you?"
         obj_confirmation = "Should I bring you the "
         obj_another = "Should I bring you more objects?"
+        obj_repeat = "Sorry, I did not understand what you said."
+
+        prefix = 'bring me the '
+        objs = ['Wooden Bowl',
+                'Brown pail',
+                'Mixed nuts',
+                'Blue cup',
+                'Pink cup',
+                'Orange biscuits',
+                'Yellow biscuits',
+                'Watering can',
+                'Flashlight',
+                'Blue fork',
+                'Green fork',
+                'Gray knife',
+                'Pink biscuits',
+                'Yellow clock',
+                'Aluminum foil',
+                'Green dish',
+                'Yellow dish',
+                'Pink bowl',
+                'Blue bowl',
+                'Mineral water',
+                'Oolong Tea',
+                'Ketchup',
+                'Canned mustard',
+                'Orange drink',
+                'Green drink',
+                'Tomato',
+                'Potato',
+                'Plant',
+                'Spray',
+                'Water bottle',
+                'Blueberry drink',
+                'Eggplant']
+
+        valid_objs = []
+        for o in objs:
+            valid_objs.append(prefix + o.lower())
+
+        print(valid_objs)
         
-        valid_objs = ['bring me the box',
-                      'bring me the bottle',
-                      'bring me the cup',
-                      'bring me the sponge']
         positive_ex = ['yes please']
         negative_ex = ['no thanks']
         
         self.userdata.objects = []
 
         self._setup  = Setup()
-        self._prompt_for_obj = Prompt(obj_question, valid_objs)
-        self._confirm_obj = ConfirmInput(obj_confirmation, positive_ex, negative_ex)
-        self._confirm_another_obj = Confirm(obj_another, positive_ex, negative_ex)
+        self._prompt_for_obj = Prompt(obj_question, valid_objs, obj_repeat)
+        self._confirm_obj = ConfirmInput(obj_confirmation, positive_ex, negative_ex, obj_repeat)
+        self._confirm_another_obj = Confirm(obj_another, positive_ex, negative_ex, obj_repeat)
         self._shutdown = Shutdown()
 
 

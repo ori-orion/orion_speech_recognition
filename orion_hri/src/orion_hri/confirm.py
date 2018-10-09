@@ -13,7 +13,7 @@ class ConfirmInput(smach.State):
 
     """
 
-    def __init__(self, question, positive_ex, negative_ex):
+    def __init__(self, question, positive_ex, negative_ex, answer_not_valid=''):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'not_confirmed', 'aborted', 'preempted'],
                              input_keys=['argument','objects'],
@@ -22,6 +22,7 @@ class ConfirmInput(smach.State):
         self.question = question
         self.positive_ex = positive_ex
         self.negative_ex = negative_ex
+        self.answer_not_valid = answer_not_valid
         
         self.hri = HRI()
 
@@ -29,7 +30,7 @@ class ConfirmInput(smach.State):
     def execute(self, userdata):
         rospy.loginfo("Confirm")
 
-        is_confirmed = self.hri.confirm(self.question  + str(userdata.argument) + '?', self.positive_ex, self.negative_ex)
+        is_confirmed = self.hri.confirm(self.question  + str(userdata.argument) + '?', self.positive_ex, self.negative_ex, self.answer_not_valid)
 
         if is_confirmed:
             if userdata.argument not in userdata.objects:
@@ -45,7 +46,7 @@ class Confirm(smach.State):
 
     """
 
-    def __init__(self, question, positive_ex, negative_ex):
+    def __init__(self, question, positive_ex, negative_ex, answer_not_valid=''):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'not_confirmed', 'aborted', 'preempted'],
                              input_keys=['argument','objects'],
@@ -54,14 +55,15 @@ class Confirm(smach.State):
         self.question = question
         self.positive_ex = positive_ex
         self.negative_ex = negative_ex
-        
+        self.answer_not_valid = answer_not_valid
+
         self.hri = HRI()
 
             
     def execute(self, userdata):
         rospy.loginfo("Confirm")
 
-        is_confirmed = self.hri.confirm(self.question, self.positive_ex, self.negative_ex)
+        is_confirmed = self.hri.confirm(self.question, self.positive_ex, self.negative_ex, self.answer_not_valid)
 
         if is_confirmed:
             if userdata.argument not in userdata.objects:

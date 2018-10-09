@@ -91,7 +91,7 @@ class HRI():
         rospy.loginfo("SENTENCE: " + self.sentence + " , SCORE: " +  str(self.score))
         return (self.sentence, self.score)
     
-    def confirm(self, text, positive_ex, negative_ex, repeat_after_sec=15, timeout=60, color='white'):
+    def confirm(self, text, positive_ex, negative_ex, text_not_valid='', repeat_after_sec=15, timeout=60, color='white'):
 
         is_confirmed = False
 

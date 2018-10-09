@@ -13,7 +13,7 @@ class Prompt(smach.State):
 
     """
 
-    def __init__(self, question, valid_sentences):
+    def __init__(self, question, valid_sentences, sentence_not_valid=''):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'aborted', 'preempted'],
                              input_keys=[],
@@ -21,6 +21,7 @@ class Prompt(smach.State):
 
         self.question = question
         self.valid_sentences = valid_sentences
+        self.sentence_not_valid = sentence_not_valid
         
         self.hri = HRI()
 
@@ -28,9 +29,17 @@ class Prompt(smach.State):
     def execute(self, userdata):
         rospy.loginfo("Prompt")
 
-        (sentence,score) = self.hri.prompt(self.question, self.valid_sentences)
-        
-        userdata.argument = sentence.split(' ')[-1]
+        (sentence,score) = self.hri.prompt(self.question, self.valid_sentences, self.sentence_not_valid)
+
+        words = sentence.split(' ')
+        print(sentence, words)
+        if len(words) == 4: # bring me the OBJECT
+            userdata.argument = str(words[-1])
+        elif len(words) == 5: # bring me the PROPERTY OBJECT
+            userdata.argument = str(words[-2] + ' ' + words[-1])
+        else:
+            rospy.logerror('Invalid sentence: %s', sentence)
+            
         self.hri.say("I understood: " +  sentence)
         
         return 'succeeded'
