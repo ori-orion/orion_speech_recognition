@@ -19,9 +19,10 @@ roslaunch tmc_talk_action_simulator talk_action_simulator.launch
 
 Adding the WRC dictionary:
 ```
- rosservice call /hsrb/voice/add_dictionary 1 1 wrc_grammar '[]' "/etc/opt/tmc/robot/conf.d/dics/wrc_grammar_en"
+ rosservice call /hsrb/voice/add_dictionary 1 1 wrc_bring_me '[]' "/etc/opt/tmc/robot/conf.d/dics/wrc_grammar_en"
 ```
-Note: adjust the path if necessary.
+Note: adjust the path and name of the dictionary, here: `wrc_bring_me`
+
 
 Removing other dictionaries:
 ```
