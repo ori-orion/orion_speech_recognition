@@ -67,7 +67,7 @@ catkin_python_setup()
 add_action_files(
     DIRECTORY action
     FILES WaitForInstruction.action
-#   Action2.action
+    WaitForConfirmation.action
 )
 
 ## Generate added messages and services with any dependencies listed here

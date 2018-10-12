@@ -58,7 +58,7 @@ class Confirm(smach.State):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'not_confirmed', 'aborted', 'preempted'],
                              input_keys=[],
-                             output_keys=[])
+                             output_keys=['is_confirmed'])
 
         self.question = question
         self.positive_ex = positive_ex
@@ -74,6 +74,8 @@ class Confirm(smach.State):
 
         is_confirmed = self.hri.confirm(self.question, self.positive_ex, self.negative_ex, self.answer_not_valid)
 
+        userdata.is_confirmed = is_confirmed
+        
         if is_confirmed:
             return 'succeeded'
         return 'not_confirmed'
