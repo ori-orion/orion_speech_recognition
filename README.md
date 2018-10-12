@@ -62,14 +62,14 @@ Calling the action server using an action client:
 ```
 rosrun actionlib axclient.py /wait_for_confirmation orion_hri/WaitForConfirmationAction
 ```
-The arguments for the Goal are:
+Example arguments for the Goal:
 ```
 question: 'Hello, can I help you?'
 positive_answers: ['yes please']
 negative_answers: ['no thanks']
 timeout: 0.0
 ```
-Note that the positive and negative answers must be included in the grammar model. The result is a boolean flag called `is_confirmed`.
+Note that the positive and negative answers _must_ be included in the grammar model. The result is a boolean flag called `is_confirmed`.
 
 ## Rebuilding the grammar
 
