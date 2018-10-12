@@ -24,7 +24,7 @@ Adding the WRC dictionary:
 Note: adjust the path and name of the dictionary, here: `wrc_bring_me`
 
 
-Removing other dictionaries:
+De-activate other dictionaries:
 ```
 rosservice call /hsrb/voice/activate_dictionaries '{names: [grammar_sample], active: False}'
 ```
