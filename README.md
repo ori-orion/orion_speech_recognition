@@ -1,7 +1,7 @@
 # orion-speech-recognition
 Repo for speech recognition capabilities for the ORIon robot
 
-## Using the simulator
+## Using the simulator or standalone ros master (ignore when using HSR)
 
 When using simulator you need to start several services and action servers
 
