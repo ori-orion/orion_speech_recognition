@@ -68,28 +68,21 @@ class HRI():
         
 
     def prompt(self, text, positive_ex, text_not_valid='', repeat_after_sec=15, timeout=60, color='white'):
-
-        self.sentence = None
-        self.score = 0.0
+        sentences = []
+        scores = []
         
-        while self.sentence == None:
+        while not sentences:
             self.say(text, timeout)
 
             result = self._get_input_text(repeat_after_sec)
 
             (sentences, scores) = self._filter_input_text(result, positive_ex)
 
-            # TODO: check also scores
-            if sentences:
-                # select text with highest probability (first in the list)
-                self.sentence = sentences[0] 
-                self.score = scores[0]
-
-            else:
+            if not sentences:
                 self.say(text_not_valid, timeout)
 
-        rospy.loginfo("SENTENCE: " + self.sentence + " , SCORE: " +  str(self.score))
-        return (self.sentence, self.score)
+        rospy.loginfo("SENTENCES: " + str(sentences) + " , SCORE: " +  str(scores))
+        return (sentences, scores)
     
     def confirm(self, text, positive_ex, negative_ex, text_not_valid='', repeat_after_sec=15, timeout=60, color='white'):
 

@@ -10,12 +10,12 @@ from orion_hri.confirm import ConfirmInput
 from orion_hri.shutdown import Shutdown
 
 class BringMeSM(smach.StateMachine):
-    def __init__(self, mode):
+    def __init__(self):
         smach.StateMachine.__init__(self, outcomes=['succeeded',
                                                     'aborted',
                                                     'preempted'])
 
-        obj_question = "What can I bring you?"
+        obj_question = "What can I do for you?"
         obj_confirmation = "Should I bring you the "
         obj_another = "Should I bring you more objects?"
         obj_repeat = "Sorry, I did not understand what you said."
@@ -64,6 +64,8 @@ class BringMeSM(smach.StateMachine):
         negative_ex = ['no thanks']
         
         self.userdata.objects = []
+        self.userdata.neg_objects = []
+        self.userdata.arguments = []
 
         self._setup  = Setup()
         self._prompt_for_obj = Prompt(obj_question, valid_objs, obj_repeat)

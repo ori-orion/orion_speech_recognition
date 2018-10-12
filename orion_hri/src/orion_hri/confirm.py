@@ -16,8 +16,8 @@ class ConfirmInput(smach.State):
     def __init__(self, question, positive_ex, negative_ex, answer_not_valid=''):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'not_confirmed', 'aborted', 'preempted'],
-                             input_keys=['argument','objects'],
-                             output_keys=['argument','objects'])
+                             input_keys=['arguments','objects', 'neg_objects'],
+                             output_keys=['arguments','objects', 'neg_objects'])
 
         self.question = question
         self.positive_ex = positive_ex
@@ -28,14 +28,22 @@ class ConfirmInput(smach.State):
 
             
     def execute(self, userdata):
-        rospy.loginfo("Confirm")
+        rospy.loginfo("STATE - ConfirmInput")
 
-        is_confirmed = self.hri.confirm(self.question  + str(userdata.argument) + '?', self.positive_ex, self.negative_ex, self.answer_not_valid)
+        for arg in userdata.arguments:
 
-        if is_confirmed:
-            if userdata.argument not in userdata.objects:
-                userdata.objects.append(userdata.argument)
-            return 'succeeded'
+            if arg not in userdata.objects and arg not in userdata.neg_objects:
+
+                is_confirmed = self.hri.confirm(self.question  + str(arg) + '?', self.positive_ex, self.negative_ex, self.answer_not_valid)
+
+                if is_confirmed:
+                    if arg not in userdata.objects:
+                        userdata.objects.append(arg)
+                        return 'succeeded'
+                else:
+                    if arg not in userdata.neg_objects:
+                        userdata.neg_objects.append(arg)
+                    
         return 'not_confirmed'
 
 
@@ -49,8 +57,8 @@ class Confirm(smach.State):
     def __init__(self, question, positive_ex, negative_ex, answer_not_valid=''):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'not_confirmed', 'aborted', 'preempted'],
-                             input_keys=['argument','objects'],
-                             output_keys=['argument','objects'])
+                             input_keys=[],
+                             output_keys=[])
 
         self.question = question
         self.positive_ex = positive_ex
@@ -61,13 +69,12 @@ class Confirm(smach.State):
 
             
     def execute(self, userdata):
-        rospy.loginfo("Confirm")
+        rospy.loginfo("STATE - Confirm")
+
 
         is_confirmed = self.hri.confirm(self.question, self.positive_ex, self.negative_ex, self.answer_not_valid)
 
         if is_confirmed:
-            if userdata.argument not in userdata.objects:
-                userdata.objects.append(userdata.argument)
             return 'succeeded'
         return 'not_confirmed'
 

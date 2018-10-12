@@ -16,8 +16,8 @@ class Prompt(smach.State):
     def __init__(self, question, valid_sentences, sentence_not_valid=''):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'aborted', 'preempted'],
-                             input_keys=[],
-                             output_keys=['argument'])
+                             input_keys=['arguments', 'objects', 'neg_objects'],
+                             output_keys=['arguments'])
 
         self.question = question
         self.valid_sentences = valid_sentences
@@ -27,19 +27,39 @@ class Prompt(smach.State):
 
             
     def execute(self, userdata):
-        rospy.loginfo("Prompt")
+        rospy.loginfo("STATE - Prompt")
 
-        (sentence,score) = self.hri.prompt(self.question, self.valid_sentences, self.sentence_not_valid)
+        userdata.arguments = []
 
-        words = sentence.split(' ')
-        print(sentence, words)
-        if len(words) == 4: # bring me the OBJECT
-            userdata.argument = str(words[-1])
-        elif len(words) == 5: # bring me the PROPERTY OBJECT
-            userdata.argument = str(words[-2] + ' ' + words[-1])
-        else:
-            rospy.logerror('Invalid sentence: %s', sentence)
+        valid_sentences = []
+        rospy.loginfo('Current objects: %s', str(userdata.objects))
+        rospy.loginfo('Current neg_objects: %s', str(userdata.neg_objects))
+        for s in self.valid_sentences:
+            words = s.split(' ')
+            if len(words) == 4 :
+                obj = str(words[-1])
+            elif len(words) == 5 :
+                obj = str(words[-2]) + ' ' + str(words[-1])
+            else:
+                obj = ''
+
+                
+            if not (obj in userdata.objects or obj in userdata.neg_objects):
+                valid_sentences.append(s)
+
+
+        (sentences,scores) = self.hri.prompt(self.question, valid_sentences, self.sentence_not_valid)
+        
+        for sentence in sentences:
+            words = sentence.split(' ')
+            print(sentence, words)
+            if len(words) == 4: # bring me the OBJECT
+                userdata.arguments.append(str(words[-1]))
+            elif len(words) == 5: # bring me the PROPERTY OBJECT
+                userdata.arguments.append(str(words[-2] + ' ' + words[-1]))
+            else:
+                rospy.logerror('Invalid sentence: %s', sentence)
             
-        self.hri.say("I understood: " +  sentence)
+            #self.hri.say("I understood: " +  sentence)
         
         return 'succeeded'

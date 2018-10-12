@@ -32,7 +32,7 @@ class WaitForInstructionActionServer:
 
     def execute_cb(self, goal):
 
-        rospy.loginfo('Received request: mode: %s', goal.mode)
+        rospy.loginfo('Received request...')
 
         # helper variables
         r = rospy.Rate(1)
@@ -42,7 +42,7 @@ class WaitForInstructionActionServer:
 
         
         # create the state machine
-        sm = BringMeSM(goal.mode)
+        sm = BringMeSM()
 
         sis = smach_ros.IntrospectionServer('wait_for_instruction', sm, '/SM_ROOT')
         sis.start()
@@ -77,6 +77,11 @@ class WaitForInstructionActionServer:
         if success:
             rospy.loginfo('%s: Succeeded' % self._action_name)
             rospy.loginfo('Objects: %s' % sm.userdata.objects)
+            self._result = orion_hri.msg.WaitForInstructionResult()
+            self._result.objects = []
+            for obj in sm.userdata.objects:
+                o = obj.replace(' ','_')
+                self._result.objects.append(o)
             self._as.set_succeeded(self._result)
         else:
             rospy.loginfo('%s: Failed' % self._action_name)

@@ -17,5 +17,5 @@ class Setup(smach.State):
                              output_keys=[])
 
     def execute(self, userdata):
-        rospy.loginfo("Waiting for input")
+        rospy.loginfo("STATE - Setup")
         return 'succeeded'

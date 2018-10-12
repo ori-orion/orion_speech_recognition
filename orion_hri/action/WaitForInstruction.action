@@ -1,8 +1,7 @@
 # Define the goal
-string mode
 --- 
 # Define the result
-string object
+string[] objects
 ---
 # Define a feedback message
 string status
