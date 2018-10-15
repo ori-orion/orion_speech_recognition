@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+
+    <node pkg="orion_hri" type="wait_for_confirmation_server.py" name="wait_for_confirmation" output="screen" respawn="true"/>
+
+    <node pkg="orion_hri" type="wait_for_input_server.py" name="wait_for_input" output="screen" respawn="true"/>
+
+    <node pkg="orion_hri" type="bring_me_server.py"  name="bring_me" output="screen" respawn="true"/>
+
+</launch>
+

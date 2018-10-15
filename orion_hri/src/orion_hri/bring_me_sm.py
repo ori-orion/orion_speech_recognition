@@ -69,6 +69,7 @@ class BringMeSM(smach.StateMachine):
                 word_to_instance[w].append(obj_lower)
                             
 
+        valid_objects_with_word = word_to_instance
         print(valid_sentences)
         print(valid_objects_with_word)
        
