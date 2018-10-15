@@ -2,7 +2,7 @@
 Repo for speech recognition capabilities for the ORIon robot
 
 ## Setup on the robot
-### Disable Speech recogntion on the robot (HSR)
+### Disable speech recognition on the robot (HSR)
 
 See https://docs.hsr.io/manual_en/development/speech_recognition.html#stop-speech-recognition
 
