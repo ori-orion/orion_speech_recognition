@@ -81,7 +81,7 @@ class BringMeSM(smach.StateMachine):
         self.userdata.arguments = []
 
         self._setup  = Setup()
-        self._prompt_for_obj = Prompt(obj_question, valid_sentences, valid_objects_with_word, obj_repeat)
+        self._prompt_for_obj = Prompt(obj_question, valid_sentences + ['search for objects'], valid_objects_with_word, obj_repeat)
         self._confirm_obj = ConfirmInput(obj_confirmation, positive_ex, negative_ex, obj_repeat)
         self._confirm_another_obj = Confirm(obj_another, positive_ex, negative_ex, obj_repeat)
         self._shutdown = Shutdown()
@@ -95,6 +95,7 @@ class BringMeSM(smach.StateMachine):
 
             smach.StateMachine.add('PromptForObject', self._prompt_for_obj,
                                    transitions={'succeeded': 'ConfirmObject',
+                                                'search_for_objects': 'ConfirmAnotherObject',
                                                 'aborted':'aborted',
                                                 'preempted':'preempted'})
 

@@ -17,7 +17,7 @@ class Prompt(smach.State):
 
     def __init__(self, question, valid_sentences, valid_objects_with_word, sentence_not_valid=''):
         smach.State.__init__(self,
-                             outcomes=['succeeded', 'aborted', 'preempted'],
+                             outcomes=['succeeded', 'search_for_objects', 'aborted', 'preempted'],
                              input_keys=['arguments', 'objects', 'neg_objects'],
                              output_keys=['arguments'])
 
@@ -61,6 +61,8 @@ class Prompt(smach.State):
         #exp_sentences = _expand_sentences(sentences, self.valid_objects_with_word)
         
         for sentence in sentences:
+            if sentence == 'search for objects':
+                return 'search_for_objects'
             words = sentence.split(' ')
             print(sentence, words)
             if len(words) == 4: # bring me the OBJECT
