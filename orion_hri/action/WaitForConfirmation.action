@@ -1,8 +1,8 @@
 # Define the goal
 string question
 # answers need to be in the grammar model
-string[] positive_answers
-string[] negative_answers
+string positive_answers
+string negative_answers
 float32 timeout 
 --- 
 # Define the result

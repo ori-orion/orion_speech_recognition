@@ -36,9 +36,13 @@ class WaitForConfirmationActionServer:
         r = rospy.Rate(1)
         success = True
 
+
+        # TODO: currently these are strings, but rather should be lists...(however MDP can't handle it easily)
+        positive_answers = [goal.positive_answers]
+        negative_answers = [goal.negative_answers]
         
         # create the state machine
-        sm = WaitForConfirmationSM(goal.question, goal.positive_answers, goal.negative_answers, goal.timeout)
+        sm = WaitForConfirmationSM(goal.question, positive_answers, negative_answers, goal.timeout)
 
         sis = smach_ros.IntrospectionServer(self._action_name, sm, '/SM_ROOT')
         sis.start()
