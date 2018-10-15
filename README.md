@@ -34,6 +34,26 @@ Checking the status:
 ```
 rosservice call /hsrb/voice/list_dictionaries '{with_refresh: False}'
 ```
+## Running the high-level (wait-for-input) action server
+
+This is the high-level action server 
+
+Starting the server:
+```
+rosrun orion_hri wait_for_input_server.py
+```
+
+Calling the action server using an action client:
+```
+rosrun actionlib axclient.py /wait_for_input orion_hri/WaitForInputAction
+```
+Example arguments for the Goal:
+```
+question: 'What can I do for you?'
+possible_inputs: ['bring me objects', 'search for objects', 'move to start', 'learn new object', 'tidy up rooms']
+timeout: 0.0
+```
+Note that the possible inputs _must_ be included in the grammar model. The result is a string called `input`.
 
 ## Running the bring-me action server
 
