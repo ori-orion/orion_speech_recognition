@@ -27,7 +27,7 @@ Speech Synthesize:
 roslaunch tmc_talk_action_simulator talk_action_simulator.launch
 ```
 
-## Maunal Setup and Configuration Options
+## Manual Setup and Configuration Options
 ### Setting up the right dictionaries for the grammar (manually)
 
 Adding the WRC dictionary:
