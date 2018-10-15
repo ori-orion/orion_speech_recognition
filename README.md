@@ -7,7 +7,7 @@ When using simulator you need to start several services and action servers
 
 Speech Recognition:
 ```
-roslaunch tmc_rosjulius speech_recognition.launch lm_locale:='en' lm_grammar_mode:=true dict_list:='/etc/opt/tmc/robot/conf.d/dics/wrc_grammar_en/dic_list.txt'
+roslaunch tmc_rosjulius speech_recognition.launch lm_locale:='en' lm_grammar_mode:=true dic_list:='/etc/opt/tmc/robot/conf.d/dics/wrc_grammar_en/dic_list.txt'
 ```
 
 Speech Synthesize:
@@ -19,12 +19,12 @@ roslaunch tmc_talk_action_simulator talk_action_simulator.launch
 
 Adding the WRC dictionary:
 ```
- rosservice call /hsrb/voice/add_dictionary 1 1 wrc_bring_me '[]' "/etc/opt/tmc/robot/conf.d/dics/wrc_grammar_en"
+ rosservice call /hsrb/voice/add_dictionary 1 1 `rospack find orion_hri`/dics/wrc_grammar_en/wrc_bring_me '[]' "/etc/opt/tmc/robot/conf.d/dics/wrc_grammar_en"
 ```
-Note: adjust the path and name of the dictionary, here: `wrc_bring_me`
 
 
-Removing other dictionaries:
+
+De-activate other dictionaries:
 ```
 rosservice call /hsrb/voice/activate_dictionaries '{names: [grammar_sample], active: False}'
 ```
