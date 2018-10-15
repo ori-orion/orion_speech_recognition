@@ -7,6 +7,8 @@ import actionlib
 
 from orion_hri.hri import HRI
 
+from smach import State
+
 class Prompt(smach.State):
     """
     Prompt
@@ -50,8 +52,11 @@ class Prompt(smach.State):
                 valid_sentences.append(s)
 
 
-        (sentences,scores) = self.hri.prompt(self.question, valid_sentences, self.sentence_not_valid)
+        (sentences,scores) = self.hri.prompt(self, self.question, valid_sentences, self.sentence_not_valid)
 
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
 
         #exp_sentences = _expand_sentences(sentences, self.valid_objects_with_word)
         
@@ -68,6 +73,12 @@ class Prompt(smach.State):
             #self.hri.say("I understood: " +  sentence)
         
         return 'succeeded'
+
+    def request_preempt(self):
+        """Overload the preempt request method just to spew an error."""
+        rospy.logwarn("Preempted!")
+        State.request_preempt(self)
+
 
 
 class PromptInput(smach.State):
@@ -93,8 +104,13 @@ class PromptInput(smach.State):
     def execute(self, userdata):
         rospy.loginfo("STATE - PromptInput")
 
-        (sentences,scores) = self.hri.prompt(self.question, self.possible_inputs, self.input_not_valid)
+        (sentences,scores) = self.hri.prompt(self, self.question, self.possible_inputs, self.input_not_valid)
 
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
+
+        
         for sentence in sentences:            
             self.hri.say("I understood: " +  sentence)
 
@@ -104,4 +120,8 @@ class PromptInput(smach.State):
         userdata.arguments.append(sentences[0])
             
         return 'succeeded'
-    
+
+    def request_preempt(self):
+        """Overload the preempt request method just to spew an error."""
+        rospy.logwarn("Preempted!")
+        State.request_preempt(self)

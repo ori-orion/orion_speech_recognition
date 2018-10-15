@@ -7,6 +7,8 @@ import actionlib
 
 from orion_hri.hri import HRI
 
+from smach import State
+
 class ConfirmInput(smach.State):
     """
     ConfirmInput
@@ -34,8 +36,13 @@ class ConfirmInput(smach.State):
 
             if arg not in userdata.objects and arg not in userdata.neg_objects:
 
-                is_confirmed = self.hri.confirm(self.question  + str(arg) + '?', self.positive_ex, self.negative_ex, self.answer_not_valid)
+                is_confirmed = self.hri.confirm(self, self.question  + str(arg) + '?', self.positive_ex, self.negative_ex, self.answer_not_valid)
 
+                if self.preempt_requested():
+                    self.service_preempt()
+                    return 'preempted'
+
+                
                 if is_confirmed:
                     if arg not in userdata.objects:
                         userdata.objects.append(arg)
@@ -45,6 +52,11 @@ class ConfirmInput(smach.State):
                         userdata.neg_objects.append(arg)
                     
         return 'not_confirmed'
+
+    def request_preempt(self):
+        """Overload the preempt request method just to spew an error."""
+        rospy.logwarn("Preempted!")
+        State.request_preempt(self)
 
 
 
@@ -72,12 +84,21 @@ class Confirm(smach.State):
         rospy.loginfo("STATE - Confirm")
 
 
-        is_confirmed = self.hri.confirm(self.question, self.positive_ex, self.negative_ex, self.answer_not_valid)
+        is_confirmed = self.hri.confirm(self, self.question, self.positive_ex, self.negative_ex, self.answer_not_valid)
 
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
+
+        
         userdata.is_confirmed = is_confirmed
         
         if is_confirmed:
             return 'succeeded'
         return 'not_confirmed'
 
-            
+    def request_preempt(self):
+        """Overload the preempt request method just to spew an error."""
+        rospy.logwarn("Preempted!")
+        State.request_preempt(self)
+

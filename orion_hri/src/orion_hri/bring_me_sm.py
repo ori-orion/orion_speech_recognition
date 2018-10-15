@@ -90,25 +90,25 @@ class BringMeSM(smach.StateMachine):
         with self:
             smach.StateMachine.add('Setup', self._setup,
                                    transitions={'succeeded': 'PromptForObject',
-                                                'aborted':'Shutdown',
-                                                'preempted':'Shutdown'})
+                                                'aborted':'aborted',
+                                                'preempted':'preempted'})
 
             smach.StateMachine.add('PromptForObject', self._prompt_for_obj,
                                    transitions={'succeeded': 'ConfirmObject',
-                                                'aborted':'Shutdown',
-                                                'preempted':'Shutdown'})
+                                                'aborted':'aborted',
+                                                'preempted':'preempted'})
 
             smach.StateMachine.add('ConfirmObject', self._confirm_obj,
                                    transitions={'succeeded': 'ConfirmAnotherObject',
                                                 'not_confirmed': 'PromptForObject',
-                                                'aborted':'Shutdown',
-                                                'preempted':'Shutdown'})
+                                                'aborted':'aborted',
+                                                'preempted':'preempted'})
 
             smach.StateMachine.add('ConfirmAnotherObject', self._confirm_another_obj,
                                    transitions={'succeeded': 'PromptForObject',
                                                 'not_confirmed': 'Shutdown',
-                                                'aborted':'Shutdown',
-                                                'preempted':'Shutdown'})
+                                                'aborted':'aborted',
+                                                'preempted':'preempted'})
             
             smach.StateMachine.add('Shutdown', self._shutdown,
                                    transitions={'succeeded':'succeeded',

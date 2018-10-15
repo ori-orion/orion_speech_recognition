@@ -67,14 +67,17 @@ class HRI():
         self.tts(text, timeout, self.colors['alert'])
         
 
-    def prompt(self, text, positive_ex, text_not_valid='', repeat_after_sec=15, timeout=60, color='white'):
+    def prompt(self, state, text, positive_ex, text_not_valid='', repeat_after_sec=15, timeout=60, color='white'):
         sentences = []
         scores = []
         
-        while not sentences:
+        while not sentences and not  state.preempt_requested():
             self.say(text, timeout)
 
             result = self._get_input_text(repeat_after_sec)
+
+            if state.preempt_requested():
+                return (sentences, scores)
 
             (sentences, scores) = self._filter_input_text(result, positive_ex)
 
@@ -84,17 +87,23 @@ class HRI():
         rospy.loginfo("SENTENCES: " + str(sentences) + " , SCORE: " +  str(scores))
         return (sentences, scores)
     
-    def confirm(self, text, positive_ex, negative_ex, text_not_valid='', repeat_after_sec=15, timeout=60, color='white'):
+    def confirm(self, state, text, positive_ex, negative_ex, text_not_valid='', repeat_after_sec=15, timeout=60, color='white'):
 
         is_confirmed = False
 
+        sentences = []
+        scores = []
+        
         self.sentence = None
         self.score = 0.0
-        while self.sentence == None:
+        while self.sentence == None and not  state.preempt_requested():
             self.say(text, timeout)
 
             result = self._get_input_text(repeat_after_sec)
 
+            if state.preempt_requested():
+                return (sentences, scores)
+            
             (sentences, scores) = self._filter_input_text(result, positive_ex + negative_ex)
 
             if sentences:

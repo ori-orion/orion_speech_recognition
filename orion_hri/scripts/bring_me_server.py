@@ -85,7 +85,7 @@ class WaitForInstructionActionServer:
             self._as.set_succeeded(self._result)
         else:
             rospy.loginfo('%s: Failed' % self._action_name)
-            self._as.set_succeeded(self._result)
+            #self._as.set_succeeded(self._result)
 
 
 if __name__ == '__main__':
