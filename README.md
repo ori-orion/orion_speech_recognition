@@ -7,7 +7,7 @@ When using simulator you need to start several services and action servers
 
 Speech Recognition:
 ```
-roslaunch tmc_rosjulius speech_recognition.launch lm_locale:='en' lm_grammar_mode:=true dict_list:='/etc/opt/tmc/robot/conf.d/dics/wrc_grammar_en/dic_list.txt'
+roslaunch tmc_rosjulius speech_recognition.launch lm_locale:='en' lm_grammar_mode:=true dic_list:='/etc/opt/tmc/robot/conf.d/dics/wrc_grammar_en/dic_list.txt'
 ```
 
 Speech Synthesize:
