@@ -6,7 +6,7 @@ Repo for speech recognition capabilities for the ORIon robot
 
 See https://docs.hsr.io/manual_en/development/speech_recognition.html#stop-speech-recognition
 
-### Use roslauch to get all nodes up (Bring me task)
+### Use roslaunch to get all nodes up (Bring me task)
 
 ```
 roslaunch orion_hri orion_hri.launch
@@ -16,7 +16,7 @@ roslaunch orion_hri orion_hri.launch
 
 When using simulator you need to start several services and action servers
 
-### Use roslauch to get all nodes up (Bring me task)
+### Use roslaunch to get all nodes up (Bring me task)
 
 ```
 roslaunch orion_hri orion_hri.launch
