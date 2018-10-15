@@ -52,28 +52,42 @@ class Prompt(smach.State):
                 valid_sentences.append(s)
 
 
-        (sentences,scores) = self.hri.prompt(self, self.question, valid_sentences, self.sentence_not_valid)
+        # (sentences,scores) = self.hri.prompt(self, self.question, valid_sentences, None, self.sentence_not_valid)
+        (sentences,scores) = self.hri.prompt(self, self.question, valid_sentences, self.valid_objects_with_word, self.sentence_not_valid)
 
         if self.preempt_requested():
             self.service_preempt()
             return 'preempted'
 
-        #exp_sentences = _expand_sentences(sentences, self.valid_objects_with_word)
-        
+        #suggested_objects = []
         for sentence in sentences:
             if sentence == 'search for objects':
                 return 'search_for_objects'
             words = sentence.split(' ')
+
             print(sentence, words)
+
             if len(words) == 4: # bring me the OBJECT
                 userdata.arguments.append(str(words[-1]))
+
+                
+                #rospy.loginfo('Suggested objects for %s: %s', str(words[-1]),  str(self.valid_objects_with_word[words[-1]]))
+                #suggested_objects += self.valid_objects_with_word[words[-1]]
             elif len(words) == 5: # bring me the PROPERTY OBJECT
                 userdata.arguments.append(str(words[-2] + ' ' + words[-1]))
+                #rospy.loginfo('bSuggested objects for %s: %s', str(words[-2]),  str(self.valid_objects_with_word[words[-2]]))
+                #rospy.loginfo('Suggested objects for %s: %s', str(words[-1]),  str(self.valid_objects_with_word[words[-1]]))
+                #suggested_objects += self.valid_objects_with_word[words[-2]]
+                #suggested_objects += self.valid_objects_with_word[words[-1]]
             else:
-                rospy.logerror('Invalid sentence: %s', sentence)
+                rospy.logerr('Invalid sentence: %s', sentence)
             
             #self.hri.say("I understood: " +  sentence)
-        
+
+        # for obj in suggested_objects:
+        #     if obj not in userdata.arguments:
+        #         userdata.arguments.append(obj)
+        # rospy.loginfo("All objects (incl. suggestions): %s", str(userdata.arguments))
         return 'succeeded'
 
     def request_preempt(self):
@@ -106,7 +120,7 @@ class PromptInput(smach.State):
     def execute(self, userdata):
         rospy.loginfo("STATE - PromptInput")
 
-        (sentences,scores) = self.hri.prompt(self, self.question, self.possible_inputs, self.input_not_valid)
+        (sentences,scores) = self.hri.prompt(self, self.question, self.possible_inputs, None, self.input_not_valid)
 
         if self.preempt_requested():
             self.service_preempt()

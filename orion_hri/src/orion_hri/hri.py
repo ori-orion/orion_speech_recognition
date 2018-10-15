@@ -36,15 +36,38 @@ class HRI():
         return data
 
 
-    def _filter_input_text(self, recognition_result, examples):
+    def _filter_input_text(self, recognition_result, examples, keywords=None):
 
         sentences = []
         scores = []
 
+        suggested_sentences = []
+        suggested_scores = []
+        prefix = 'bring me the'
+        added_keywords = []
         for i in range(len(recognition_result.sentences)):
             if recognition_result.sentences[i] in examples:
                 sentences.append(recognition_result.sentences[i])
                 scores.append(recognition_result.scores[i])
+
+            # make suggestions
+            if keywords:
+                for k in keywords:
+                    if k not in added_keywords:
+                        if k in recognition_result.sentences[i]:
+                            for val in keywords[k]:
+                                s = prefix + ' ' + val
+                                if s not in sentences:
+                                    rospy.loginfo('Suggested object for %s: %s', str(k),  str(val))
+                                    suggested_sentences.append(s)
+                                    suggested_scores.append(0.0)
+                                    added_keywords.append(k)
+
+
+        for i in range(len(suggested_sentences)):
+            if suggested_sentences[i] not in sentences:
+                sentences.append(suggested_sentences[i])
+                scores.append(suggested_scores[i])
 
         return (sentences, scores)
     
@@ -67,7 +90,7 @@ class HRI():
         self.tts(text, timeout, self.colors['alert'])
         
 
-    def prompt(self, state, text, positive_ex, text_not_valid='', repeat_after_sec=15, timeout=60, color='white'):
+    def prompt(self, state, text, positive_ex, keywords=None, text_not_valid='', repeat_after_sec=15, timeout=60, color='white'):
         sentences = []
         scores = []
         
@@ -79,7 +102,7 @@ class HRI():
             if state.preempt_requested():
                 return (sentences, scores)
 
-            (sentences, scores) = self._filter_input_text(result, positive_ex)
+            (sentences, scores) = self._filter_input_text(result, positive_ex, keywords)
 
             if not sentences:
                 self.say(text_not_valid, timeout)

@@ -67,6 +67,16 @@ class BringMeSM(smach.StateMachine):
                 if w not in word_to_instance:
                     word_to_instance[w] = []
                 word_to_instance[w].append(obj_lower)
+                if w == 'potato':
+                    word_to_instance[w].append('tomato')
+                elif w == 'plant':
+                    word_to_instance[w].append('eggplant')
+                # BRUTE FORCE
+                #if 'ketchup' not in word_to_instance[w]: 
+                #    word_to_instance[w].append('ketchup')
+                #if 'flashlight' not in word_to_instance[w]:                     
+                #    word_to_instance[w].append('flashlight')
+
                             
 
         valid_objects_with_word = word_to_instance
