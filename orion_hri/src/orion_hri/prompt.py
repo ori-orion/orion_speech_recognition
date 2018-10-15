@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+##! /usr/bin/env python
 import rospy
 import smach
 import smach_ros
@@ -9,11 +9,11 @@ from orion_hri.hri import HRI
 
 class Prompt(smach.State):
     """
-    Listen
+    Prompt
 
     """
 
-    def __init__(self, question, valid_sentences, sentence_not_valid=''):
+    def __init__(self, question, valid_sentences, valid_objects_with_word, sentence_not_valid=''):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'aborted', 'preempted'],
                              input_keys=['arguments', 'objects', 'neg_objects'],
@@ -21,7 +21,9 @@ class Prompt(smach.State):
 
         self.question = question
         self.valid_sentences = valid_sentences
+        self.valid_objects_with_word = valid_objects_with_word
         self.sentence_not_valid = sentence_not_valid
+        
         
         self.hri = HRI()
 
@@ -49,6 +51,9 @@ class Prompt(smach.State):
 
 
         (sentences,scores) = self.hri.prompt(self.question, valid_sentences, self.sentence_not_valid)
+
+
+        #exp_sentences = _expand_sentences(sentences, self.valid_objects_with_word)
         
         for sentence in sentences:
             words = sentence.split(' ')
@@ -63,3 +68,40 @@ class Prompt(smach.State):
             #self.hri.say("I understood: " +  sentence)
         
         return 'succeeded'
+
+
+class PromptInput(smach.State):
+    """
+    Prompt
+
+    """
+
+    def __init__(self, question, possible_inputs, input_not_valid=''):
+        smach.State.__init__(self,
+                             outcomes=['succeeded', 'aborted', 'preempted'],
+                             input_keys=['input', 'arguments'],
+                             output_keys=['input', 'arguments'])
+
+        self.question = question
+        self.possible_inputs = possible_inputs
+        self.input_not_valid = input_not_valid
+        
+        
+        self.hri = HRI()
+
+            
+    def execute(self, userdata):
+        rospy.loginfo("STATE - PromptInput")
+
+        (sentences,scores) = self.hri.prompt(self.question, self.possible_inputs, self.input_not_valid)
+
+        for sentence in sentences:            
+            self.hri.say("I understood: " +  sentence)
+
+        # most likely input
+        userdata.input = sentences[0]
+        userdata.arguments = []
+        userdata.arguments.append(sentences[0])
+            
+        return 'succeeded'
+    

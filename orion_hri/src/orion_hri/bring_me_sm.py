@@ -54,12 +54,24 @@ class BringMeSM(smach.StateMachine):
                 'Blueberry drink',
                 'Eggplant']
 
-        valid_objs = []
-        for o in objs:
-            valid_objs.append(prefix + o.lower())
 
-        print(valid_objs)
+        word_to_instance = dict()
         
+        valid_sentences = []
+        for o in objs:
+            obj_lower = o.lower()
+            valid_sentences.append(prefix + obj_lower)
+            words = obj_lower.split(' ')
+
+            for w in words:
+                if w not in word_to_instance:
+                    word_to_instance[w] = []
+                word_to_instance[w].append(obj_lower)
+                            
+
+        print(valid_sentences)
+        print(valid_objects_with_word)
+       
         positive_ex = ['yes please']
         negative_ex = ['no thanks']
         
@@ -68,7 +80,7 @@ class BringMeSM(smach.StateMachine):
         self.userdata.arguments = []
 
         self._setup  = Setup()
-        self._prompt_for_obj = Prompt(obj_question, valid_objs, obj_repeat)
+        self._prompt_for_obj = Prompt(obj_question, valid_sentences, valid_objects_with_word, obj_repeat)
         self._confirm_obj = ConfirmInput(obj_confirmation, positive_ex, negative_ex, obj_repeat)
         self._confirm_another_obj = Confirm(obj_another, positive_ex, negative_ex, obj_repeat)
         self._shutdown = Shutdown()

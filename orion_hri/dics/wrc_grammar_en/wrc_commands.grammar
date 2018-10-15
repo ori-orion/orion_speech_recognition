@@ -1,0 +1,8 @@
+S : NS_B COMMANDS NS_E
+COMMANDS : bring me objects
+COMMANDS : tidy up rooms
+COMMANDS : search for objects
+COMMANDS : learn new object
+COMMANDS : move to start
+COMMANDS : yes correct 
+COMMANDS : no cancel 

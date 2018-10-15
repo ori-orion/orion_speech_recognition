@@ -1,0 +1,12 @@
+# Define the goal
+string question
+# inputs need to be in the grammar model
+# eg ['search for objects', 'tidy up', 'bring me something', 'learn new object', 'go to start'] 
+string[] possible_inputs
+float32 timeout 
+--- 
+# Define the result
+string input
+---
+# Define a feedback message
+string status
