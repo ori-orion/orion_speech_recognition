@@ -1,23 +1,25 @@
 # orion-speech-recognition
 Repo for speech recognition capabilities for the ORIon robot
 
-# Disable Speech recogntion on the robot (HSR)
+## Setup on the robot
+### Disable Speech recogntion on the robot (HSR)
 
 See https://docs.hsr.io/manual_en/development/speech_recognition.html#stop-speech-recognition
 
-## Use roslauch to get all nodes up (Bring me task)
+### Use roslauch to get all nodes up (Bring me task)
 
 ```
 roslaunch orion_hri orion_hri.launch
 ```
 
-## Using the simulator or standalone ros master (ignore when using HSR)
+## Using the simulator / standalone machine (ignore when using HSR)
 
 When using simulator you need to start several services and action servers
 
-Speech Recognition:
+### Use roslauch to get all nodes up (Bring me task)
+
 ```
-roslaunch tmc_rosjulius speech_recognition.launch lm_locale:='en' lm_grammar_mode:=true dic_list:='/etc/opt/tmc/robot/conf.d/dics/wrc_grammar_en/dic_list.txt'
+roslaunch orion_hri orion_hri.launch
 ```
 
 Speech Synthesize:
@@ -25,14 +27,13 @@ Speech Synthesize:
 roslaunch tmc_talk_action_simulator talk_action_simulator.launch
 ```
 
-## Setting up the right dictionaries for the grammar
+## Maunal Setup ()
+### Setting up the right dictionaries for the grammar (manually)
 
 Adding the WRC dictionary:
 ```
  rosservice call /hsrb/voice/add_dictionary 1 1 `rospack find orion_hri`/dics/wrc_grammar_en/wrc_bring_me '[]' "/etc/opt/tmc/robot/conf.d/dics/wrc_grammar_en"
 ```
-
-
 
 De-activate other dictionaries:
 ```
@@ -44,7 +45,7 @@ Checking the status:
 ```
 rosservice call /hsrb/voice/list_dictionaries '{with_refresh: False}'
 ```
-## Running the high-level (wait-for-input) action server
+### Running the high-level (wait-for-input) action server
 
 This is the high-level action server 
 
@@ -65,7 +66,7 @@ timeout: 0.0
 ```
 Note that the possible inputs _must_ be included in the grammar model. The result is a string called `input`.
 
-## Running the bring-me action server
+### Running the bring-me action server
 
 Starting the server:
 ```
@@ -79,7 +80,7 @@ rosrun actionlib axclient.py /wait_for_instruction orion_hri/WaitForInstructionA
 Note: No arguments are given. The result is a list of objects.
 
 
-## Running the wait-for-confirmation action server
+### Running the wait-for-confirmation action server
 
 This is a generic server that asks a question and waits for an answer. 
 
@@ -101,7 +102,7 @@ timeout: 0.0
 ```
 Note that the positive and negative answers _must_ be included in the grammar model. The result is a boolean flag called `is_confirmed`.
 
-## Rebuilding the grammar
+### Rebuilding the grammar
 
 ```
 cd ~/catkin_ws/src/orion_speech_recognition/orion_hri/dics
