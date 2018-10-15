@@ -1,6 +1,16 @@
 # orion-speech-recognition
 Repo for speech recognition capabilities for the ORIon robot
 
+# Disable Speech recogntion on the robot (HSR)
+
+See https://docs.hsr.io/manual_en/development/speech_recognition.html#stop-speech-recognition
+
+## Use roslauch to get all nodes up (Bring me task)
+
+```
+roslaunch orion_hri orion_hri.launch
+```
+
 ## Using the simulator or standalone ros master (ignore when using HSR)
 
 When using simulator you need to start several services and action servers
