@@ -46,6 +46,7 @@ class ConfirmInput(smach.State):
                 if is_confirmed:
                     if arg not in userdata.objects:
                         userdata.objects.append(arg)
+                        self.hri.say('OK, I will bring you the ' + str(arg))
                         return 'succeeded'
                 else:
                     if arg not in userdata.neg_objects:

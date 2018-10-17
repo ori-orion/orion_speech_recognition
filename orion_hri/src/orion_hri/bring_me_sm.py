@@ -15,7 +15,7 @@ class BringMeSM(smach.StateMachine):
                                                     'aborted',
                                                     'preempted'])
 
-        obj_question = "What can I do for you?"
+        obj_question = "What should I do?"
         obj_confirmation = "Should I bring you the "
         obj_another = "Should I bring you more objects?"
         obj_repeat = "Sorry, I did not understand what you said."
@@ -31,7 +31,7 @@ class BringMeSM(smach.StateMachine):
                 'Watering can',
                 'Flashlight',
                 'Blue fork',
-                'Green fork',
+                'Green spoon',
                 'Gray knife',
                 'Pink biscuits',
                 'Yellow clock',
@@ -91,7 +91,7 @@ class BringMeSM(smach.StateMachine):
         self.userdata.arguments = []
 
         self._setup  = Setup()
-        self._prompt_for_obj = Prompt(obj_question, valid_sentences + ['search for objects'], valid_objects_with_word, obj_repeat)
+        self._prompt_for_obj = Prompt(obj_question, valid_sentences + ['search for objects', 'ignore last object'], valid_objects_with_word, obj_repeat)
         self._confirm_obj = ConfirmInput(obj_confirmation, positive_ex, negative_ex, obj_repeat)
         self._confirm_another_obj = Confirm(obj_another, positive_ex, negative_ex, obj_repeat)
         self._shutdown = Shutdown()
@@ -106,6 +106,7 @@ class BringMeSM(smach.StateMachine):
             smach.StateMachine.add('PromptForObject', self._prompt_for_obj,
                                    transitions={'succeeded': 'ConfirmObject',
                                                 'search_for_objects': 'ConfirmAnotherObject',
+                                                'ignore_last_object': 'PromptForObject',
                                                 'aborted':'aborted',
                                                 'preempted':'preempted'})
 

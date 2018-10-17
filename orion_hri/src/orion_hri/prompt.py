@@ -17,9 +17,9 @@ class Prompt(smach.State):
 
     def __init__(self, question, valid_sentences, valid_objects_with_word, sentence_not_valid=''):
         smach.State.__init__(self,
-                             outcomes=['succeeded', 'search_for_objects', 'aborted', 'preempted'],
+                             outcomes=['succeeded', 'search_for_objects', 'ignore_last_object', 'aborted', 'preempted'],
                              input_keys=['arguments', 'objects', 'neg_objects'],
-                             output_keys=['arguments'])
+                             output_keys=['arguments', 'objects', 'neg_objects'])
 
         self.question = question
         self.valid_sentences = valid_sentences
@@ -63,6 +63,15 @@ class Prompt(smach.State):
         for sentence in sentences:
             if sentence == 'search for objects':
                 return 'search_for_objects'
+            elif sentence == 'ignore last object':
+                userdata.neg_objects = []
+                if len(userdata.objects) >= 1:
+                    obj = userdata.objects[-1]
+                    userdata.objects = userdata.objects[:-1]
+                    self.hri.say("OK, I will ignore the " + obj)
+                else:
+                    self.hri.say("OK, but there are no more objects")
+                return 'ignore_last_object'
             words = sentence.split(' ')
 
             print(sentence, words)
