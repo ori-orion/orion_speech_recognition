@@ -136,8 +136,8 @@ class PromptInput(smach.State):
             return 'preempted'
 
         
-        for sentence in sentences:            
-            self.hri.say("I understood: " +  sentence)
+        #for sentence in sentences:            
+        #    self.hri.say("I understood: " +  sentence)
 
         # most likely input
         userdata.input = sentences[0]

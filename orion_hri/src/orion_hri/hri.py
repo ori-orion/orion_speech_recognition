@@ -97,6 +97,8 @@ class HRI():
         while not sentences and not  state.preempt_requested():
             self.say(text, timeout)
 
+            rospy.loginfo("positive_ex: %s", str(positive_ex))
+
             result = self._get_input_text(repeat_after_sec)
 
             if state.preempt_requested():
