@@ -122,6 +122,9 @@ class HRI():
         while self.sentence == None and not  state.preempt_requested():
             self.say(text, timeout)
 
+            rospy.loginfo("positive_ex: %s, negative: %s", str(positive_ex), str(negative_ex))
+            
+            
             result = self._get_input_text(repeat_after_sec)
 
             if state.preempt_requested():
@@ -139,7 +142,7 @@ class HRI():
                 elif self.sentence in negative_ex:
                     is_confirmed = False
                 else:
-                    rospy.logerror("Invalid text input!")
+                    rospy.logerr("Invalid text input!")
             else:
                 self.say(text_not_valid, timeout)
 
