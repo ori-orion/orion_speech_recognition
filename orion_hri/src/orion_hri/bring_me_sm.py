@@ -54,6 +54,17 @@ class BringMeSM(smach.StateMachine):
                 'Blueberry drink',
                 'Eggplant']
 
+        unknown_objs = ['Yellow towel',
+                        'Table cloth',
+                        'Mitten',
+                        'Sponge',
+                        'Stationery holder',
+                        'Kitchen brush',
+                        'Mustard',
+                        'Soap bottle']
+
+
+        objs = objs + unknown_objs
 
         word_to_instance = dict()
         
