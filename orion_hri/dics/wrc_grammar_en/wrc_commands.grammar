@@ -1,4 +1,5 @@
 S : NS_B COMMANDS NS_E
+COMMANDS : tidy up 
 COMMANDS : bring me objects
 COMMANDS : find me objects
 COMMANDS : search for objects
