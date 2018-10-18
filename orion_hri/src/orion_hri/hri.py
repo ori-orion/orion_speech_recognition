@@ -119,9 +119,9 @@ class HRI():
         sentences = []
         scores = []
         
-        self.sentence = None
+        self.sentence = ''
         self.score = 0.0
-        while self.sentence == None and not  state.preempt_requested():
+        while self.sentence == ''  and not  state.preempt_requested():
             self.say(text, timeout)
 
             rospy.loginfo("positive_ex: %s, negative: %s", str(positive_ex), str(negative_ex))

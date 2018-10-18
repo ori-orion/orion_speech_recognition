@@ -1,5 +1,6 @@
 S : NS_B COMMANDS NS_E
 COMMANDS : bring me objects
+COMMANDS : find me objects
 COMMANDS : search for objects
 COMMANDS : ignore last object
 COMMANDS : learn new object

@@ -15,7 +15,7 @@ class BringMeSM(smach.StateMachine):
                                                     'aborted',
                                                     'preempted'])
 
-        obj_question = "What should I do?"
+        obj_question = "What should I bring you?"
         obj_confirmation = "Should I bring you the "
         obj_another = "Should I bring you more objects?"
         obj_repeat = "Sorry, I did not understand what you said."
@@ -83,10 +83,12 @@ class BringMeSM(smach.StateMachine):
                 elif w == 'plant':
                     word_to_instance[w].append('eggplant')
                 # BRUTE FORCE
-                #if 'ketchup' not in word_to_instance[w]: 
-                #    word_to_instance[w].append('ketchup')
-                #if 'flashlight' not in word_to_instance[w]:                     
-                #    word_to_instance[w].append('flashlight')
+                if 'ketchup' not in word_to_instance[w]: 
+                    word_to_instance[w].append('ketchup')
+                if 'flashlight' not in word_to_instance[w]:                     
+                    word_to_instance[w].append('flashlight')
+                if 'mitten' not in word_to_instance[w]:                     
+                    word_to_instance[w].append('mitten')
 
                             
 
