@@ -31,13 +31,10 @@ pink	p ih ng k
 mineral	m ih n er ax l
 oolong	uw l ao ng
 water	w ao dx er
-kitchen k ih ch ax n
-table	t ey b ax l
 canned	k ae n d
 aluminum	ah l uw m ih n ah m
 blueberry	b l uw b eh r iy
-stationery	s t ey sh ah n eh r iy
-soap	s ow p
+unknown	ax n n ow n
 % OBJECT
 bottle	b aa dx ax l
 cup	k ah
@@ -65,9 +62,4 @@ tomato	t ah m aa t ow
 eggplant	eh g p l ae n t
 can	k ae n
 spoon	s p uw n
-cloth	k l ao th
-holder	hh ow l d er
-brush	b r ah sh
-sponge	s p ah n jh
-towel	t aw ah l
-mitten	m ih t ah n
+object	aa b jh eh k t

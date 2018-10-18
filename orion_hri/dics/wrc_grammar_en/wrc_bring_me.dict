@@ -21,13 +21,10 @@
 9	[mineral]	m ih n er ax l
 9	[oolong]	uw l ao ng
 9	[water]	w ao dx er
-9	[kitchen]	k ih ch ax n
-9	[table]	t ey b ax l
 9	[canned]	k ae n d
 9	[aluminum]	ah l uw m ih n ah m
 9	[blueberry]	b l uw b eh r iy
-9	[stationery]	s t ey sh ah n eh r iy
-9	[soap]	s ow p
+9	[unknown]	ax n n ow n
 10	[bottle]	b aa dx ax l
 10	[cup]	k ah
 10	[bowl]	b ow l
@@ -54,9 +51,4 @@
 10	[eggplant]	eh g p l ae n t
 10	[can]	k ae n
 10	[spoon]	s p uw n
-10	[cloth]	k l ao th
-10	[holder]	hh ow l d er
-10	[brush]	b r ah sh
-10	[sponge]	s p ah n jh
-10	[towel]	t aw ah l
-10	[mitten]	m ih t ah n
+10	[object]	aa b jh eh k t
