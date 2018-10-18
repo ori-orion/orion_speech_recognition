@@ -55,8 +55,7 @@ class HRI():
             if keywords:
                 for k in keywords:
                     if k not in added_keywords:
-                        space_k_space = ' ' + k + ' '
-                        if space_k_space in recognition_result.sentences[i]:
+                        if k in recognition_result.sentences[i] and recognition_result.sentences[i] not in ['yes please', 'no cancel', 'no thanks', 'okay done', 'yes correct']: 
                             for val in keywords[k]:
                                 s = prefix + ' ' + val
                                 if s not in sentences:
