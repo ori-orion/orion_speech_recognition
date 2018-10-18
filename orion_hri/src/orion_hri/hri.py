@@ -83,6 +83,7 @@ class HRI():
         #self.output_text.wait_for_result(rospy.Duration(timeout))
         self.output_text.wait_for_result()
         rospy.loginfo('SPEECH OUTPUT: %s', text)
+        rospy.sleep(1.0)
         # TODO: set color of robot
 
     def say(self, text, timeout=60):
