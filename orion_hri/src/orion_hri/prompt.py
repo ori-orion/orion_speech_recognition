@@ -74,7 +74,7 @@ class Prompt(smach.State):
                 return 'ignore_last_object'
             words = sentence.split(' ')
 
-            print(sentence, words)
+            rospy.loginfo("Speech recognition (valid): %s", sentence)
 
             if len(words) == 4: # bring me the OBJECT
                 userdata.arguments.append(str(words[-1]))

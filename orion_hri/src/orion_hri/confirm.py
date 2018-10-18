@@ -48,7 +48,7 @@ class ConfirmInput(smach.State):
                 if is_confirmed:
                     if arg not in userdata.objects:
                         userdata.objects.append(arg)
-                        if arg in ['search for objects','ignore last object', 'move to start', 'tidy up rooms']:
+                        if arg in ['tidy up', 'search for objects','ignore last object', 'move to start', 'tidy up rooms']:
                             self.hri.say('OK, I will ' + str(arg))
                         elif arg in ['bring me objects', 'find me objects']:
                             self.hri.say('OK, I will bring you objects')

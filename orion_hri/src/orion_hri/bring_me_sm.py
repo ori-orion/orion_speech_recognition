@@ -52,19 +52,20 @@ class BringMeSM(smach.StateMachine):
                 'Spray',
                 'Water bottle',
                 'Blueberry drink',
-                'Eggplant']
+                'Eggplant',
+                'unknown object']
 
-        unknown_objs = ['Yellow towel',
-                        'Table cloth',
-                        'Mitten',
-                        'Sponge',
-                        'Stationery holder',
-                        'Kitchen brush',
-                        'Mustard',
-                        'Soap bottle']
+        # unknown_objs = ['Yellow towel',
+        #                 'Table cloth',
+        #                 'Mitten',
+        #                 'Sponge',
+        #                 'Stationery holder',
+        #                 'Kitchen brush',
+        #                 'Mustard',
+        #                 'Soap bottle']
 
 
-        objs = objs + unknown_objs
+        #objs = objs + unknown_objs
 
         word_to_instance = dict()
         
@@ -87,8 +88,7 @@ class BringMeSM(smach.StateMachine):
                     word_to_instance[w].append('ketchup')
                 if 'flashlight' not in word_to_instance[w]:                     
                     word_to_instance[w].append('flashlight')
-                if 'mitten' not in word_to_instance[w]:                     
-                    word_to_instance[w].append('mitten')
+
 
                             
 

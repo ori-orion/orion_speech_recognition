@@ -46,6 +46,7 @@ class HRI():
         prefix = 'bring me the'
         added_keywords = []
         for i in range(len(recognition_result.sentences)):
+            rospy.loginfo("Speech recognition (unfiltered): %s - %s", recognition_result.sentences[i], str(recognition_result.scores[i]))
             if recognition_result.sentences[i] in examples:
                 sentences.append(recognition_result.sentences[i])
                 scores.append(recognition_result.scores[i])
@@ -54,7 +55,8 @@ class HRI():
             if keywords:
                 for k in keywords:
                     if k not in added_keywords:
-                        if k in recognition_result.sentences[i]:
+                        space_k_space = ' ' + k + ' '
+                        if space_k_space in recognition_result.sentences[i]:
                             for val in keywords[k]:
                                 s = prefix + ' ' + val
                                 if s not in sentences:
