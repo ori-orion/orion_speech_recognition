@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
 
-  <!--<include file="$(find tmc_rosjulius)/launch/speech_recognition.launch">
+  <include file="$(find tmc_rosjulius)/launch/speech_recognition.launch">
     <arg name="lm_locale" value="en"/>
     <arg name="lm_grammar_mode" value="true"/>
     <arg name="dic_list" value="/etc/opt/tmc/robot/conf.d/dics/wrc_grammar_en/dic_list.txt"/>
-  </include>-->
+  </include>
   
   
     <node pkg="orion_hri" type="wait_for_confirmation_server.py" name="wait_for_confirmation" output="screen" respawn="true"/>
