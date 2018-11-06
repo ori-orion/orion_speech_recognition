@@ -22,38 +22,38 @@ class BringMeSM(smach.StateMachine):
 
         prefix = 'bring me the '
         objs = ['Wooden Bowl',
-                'Brown pail',
+                #'Brown pail',
                 'Mixed nuts',
-                'Blue cup',
-                'Pink cup',
+                #'Blue cup',
+                #'Pink cup',
                 #'Orange biscuits',
                 #'Yellow biscuits',
                 #'Watering can',
                 'Flashlight',
-                'Blue fork',
+                #'Blue fork',
                 #'Green spoon',
                 #'Gray knife',
-                'Pink biscuits',
+                #'Pink biscuits',
                 'Yellow clock',
                 'Aluminum foil',
                 #'Green dish',
                 'Yellow dish',
                 #'Pink bowl',
-                'Blue bowl',
+                #'Blue bowl',
                 'Mineral water',
                 #'Oolong Tea',
-                'Ketchup',
+                #'Ketchup',
                 #'Canned mustard',
                 'Orange drink',
                 #'Green drink',
                 'Tomato',
                 'Potato',
                 'Plant',
-                'Spray',
+                #'Spray',
                 'Water bottle',
                 #'Blueberry drink',
-                'Eggplant',
-                'unknown object']
+                'Eggplant']
+                #'unknown object']
 
         # unknown_objs = ['Yellow towel',
         #                 'Table cloth',
@@ -81,8 +81,9 @@ class BringMeSM(smach.StateMachine):
                 word_to_instance[w].append(obj_lower)
                 if w == 'potato':
                     word_to_instance[w].append('tomato')
-                elif w == 'plant':
-                    word_to_instance[w].append('eggplant')
+                #elif w == 'plant':
+                #    word_to_instance[w].append('eggplant')
+
                 # BRUTE FORCE
                 #if 'ketchup' not in word_to_instance[w]: 
                 #    word_to_instance[w].append('ketchup')
