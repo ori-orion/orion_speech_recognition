@@ -26,32 +26,32 @@ class BringMeSM(smach.StateMachine):
                 'Mixed nuts',
                 'Blue cup',
                 'Pink cup',
-                'Orange biscuits',
-                'Yellow biscuits',
-                'Watering can',
+                #'Orange biscuits',
+                #'Yellow biscuits',
+                #'Watering can',
                 'Flashlight',
                 'Blue fork',
-                'Green spoon',
-                'Gray knife',
+                #'Green spoon',
+                #'Gray knife',
                 'Pink biscuits',
                 'Yellow clock',
                 'Aluminum foil',
-                'Green dish',
+                #'Green dish',
                 'Yellow dish',
-                'Pink bowl',
+                #'Pink bowl',
                 'Blue bowl',
                 'Mineral water',
-                'Oolong Tea',
+                #'Oolong Tea',
                 'Ketchup',
-                'Canned mustard',
+                #'Canned mustard',
                 'Orange drink',
-                'Green drink',
+                #'Green drink',
                 'Tomato',
                 'Potato',
                 'Plant',
                 'Spray',
                 'Water bottle',
-                'Blueberry drink',
+                #'Blueberry drink',
                 'Eggplant',
                 'unknown object']
 
@@ -84,10 +84,10 @@ class BringMeSM(smach.StateMachine):
                 elif w == 'plant':
                     word_to_instance[w].append('eggplant')
                 # BRUTE FORCE
-                if 'ketchup' not in word_to_instance[w]: 
-                    word_to_instance[w].append('ketchup')
-                if 'flashlight' not in word_to_instance[w]:                     
-                    word_to_instance[w].append('flashlight')
+                #if 'ketchup' not in word_to_instance[w]: 
+                #    word_to_instance[w].append('ketchup')
+                #if 'flashlight' not in word_to_instance[w]:                     
+                #    word_to_instance[w].append('flashlight')
 
 
                             
