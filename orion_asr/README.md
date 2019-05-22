@@ -17,6 +17,13 @@ scikits.audiolab==0.11.0
 ## WaveNet
 Cloned from https://github.com/buriburisuri/speech-to-text-wavenet in /wavenet directory. Modified /wavenet/recognize.py so that the transcriber could be called externally.
 
+## Setup
+
+Create a directory:
+```
+orion_asr/src/tmp
+```
+
 ## Run Action Server
 You can run the speech recognition server with the following:
 ```
