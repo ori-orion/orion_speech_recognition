@@ -57,7 +57,7 @@ Example input 2:
 ```
 question: 'What do you want me to do?'
 candidates: ['search for objects', 'tidy up', 'bring me something', 'learn new object', 'go to start', "bring me a <param>"]
-params = ["banana", "tomato", "peach", "toothbrush", "apple"]
+params: ["banana", "tomato", "peach", "toothbrush", "apple"]
 timeout: 0.0
 ```
 

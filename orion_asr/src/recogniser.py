@@ -1,7 +1,7 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import speech_recognition as sr
-from wavenet.recognize import WaveNet
+# from wavenet.recognize import WaveNet
 import Levenshtein, threading, time
 import numpy as np
 import rospy
@@ -45,16 +45,16 @@ class ASR(object):
 
             th = threading.Thread(target=transcribe_sphinx, args=(audio,))
             th.start()
-
-            try:
-                wav = audio.get_wav_data(16000)
-                tmp_filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "tmp/%s.wav" % int(time.time()))
-                with open(tmp_filename, "wb") as f:
-                    f.write(wav)
-                text = self.wavenet.transcribe(tmp_filename)
-                os.remove(tmp_filename)
-            except Exception as e:
-                rospy.logerr(e)
+            #
+            # try:
+            #     wav = audio.get_wav_data(16000)
+            #     tmp_filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "tmp/%s.wav" % int(time.time()))
+            #     with open(tmp_filename, "wb") as f:
+            #         f.write(wav)
+            #     text = self.wavenet.transcribe(tmp_filename)
+            #     os.remove(tmp_filename)
+            # except Exception as e:
+            #     rospy.logerr(e)
 
             th.join()
 
@@ -110,10 +110,10 @@ class ASR(object):
 
 if __name__ == "__main__":
     recognizer = sr.Recognizer()
-    wavenet = WaveNet()
+    # wavenet = WaveNet()
 
     print("Instantiating ASR...")
-    asr = ASR(recognizer, wavenet)
+    asr = ASR(recognizer, "wavenet")
 
     candidates = ['search for objects', 'tidy up', 'bring me something', 'learn new object', 'go to start', "bring me a <param>"]
     params = ["banana", "tomato", "peach", "toothbrush", "apple"]

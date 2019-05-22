@@ -6,7 +6,7 @@ from actionlib import SimpleActionServer
 from orion_actions.msg import SpeakAndListenAction, SpeakAndListenGoal, SpeakAndListenFeedback, SpeakAndListenResult
 
 import speech_recognition as sr
-from wavenet.recognize import WaveNet
+# from wavenet.recognize import WaveNet
 from recogniser import ASR
 import time
 import numpy as np
@@ -23,7 +23,7 @@ class SpeechServer(object):
         with sr.Microphone() as source:
             self.recognizer.adjust_for_ambient_noise(source)
 
-        self.wavenet = WaveNet()
+        # self.wavenet = WaveNet()
         
         rospy.logwarn("SpeechServer started:")
 
@@ -49,7 +49,7 @@ class SpeechServer(object):
             self._as.set_preempted()
             return
 
-        asr = ASR(self.recognizer, self.wavenet)
+        asr = ASR(self.recognizer, "self.wavenet")
 
         with sr.Microphone() as source:
             print("Started recording...")
