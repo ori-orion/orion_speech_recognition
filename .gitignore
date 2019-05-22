@@ -105,3 +105,8 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+orion_asr/src/wavenet/.git
+*/__pycache__/
+orion_asr/src/tmp/*
+.idea
