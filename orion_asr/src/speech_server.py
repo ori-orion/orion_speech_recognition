@@ -66,11 +66,6 @@ class SpeechServer(object):
         rospy.logwarn("Params:")
         rospy.logwarn(params)
 
-        if self._as.is_preempt_requested():
-            rospy.logwarn('%s: Preempted' % self._action_name)
-            self._as.set_preempted()
-            return
-
         if question:
             self.speak(question)
 
@@ -84,6 +79,12 @@ class SpeechServer(object):
             answer, param, confidence, transcription, succeeded = "", "", 0.0, "", False
 
             while timelimit - time.time() > 0:
+
+                if self._as.is_preempt_requested():
+                    rospy.logwarn('%s: Preempted' % self._action_name)
+                    self._as.set_preempted()
+                    return
+
                 answer, param, confidence, transcription, succeeded = asr.main(source, candidates, params)
                 rospy.logwarn('Answer: %s, Confidence: %s' % (answer, confidence))
                 if succeeded:
@@ -108,14 +109,15 @@ class SpeechServer(object):
 
         rospy.logwarn("HotwordListen action started:")
 
-        if self._hotword_as.is_preempt_requested():
-            rospy.logwarn('%s: Preempted' % self._action_name)
-            self._hotword_as.set_preempted()
-            return
-
         asr = ASR(self.recognizer, "self.wavenet")
 
         with sr.Microphone() as source:
+
+            if self._hotword_as.is_preempt_requested():
+                rospy.logwarn('%s: Preempted' % self._action_name)
+                self._hotword_as.set_preempted()
+                return
+
             print("Started recording...")
 
             timelimit = time.time() + timeout if timeout else np.inf
