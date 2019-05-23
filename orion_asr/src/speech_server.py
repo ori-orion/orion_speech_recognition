@@ -3,7 +3,7 @@
 import rospy
 from actionlib import SimpleActionServer, SimpleActionClient
 
-from orion_actions.msg import SpeakAction, SpeakGoal, SpeakResult
+from orion_actions.msg import HotwordListenAction, HotwordListenGoal, HotwordListenResult
 from orion_actions.msg import SpeakAndListenAction, SpeakAndListenGoal, SpeakAndListenFeedback, SpeakAndListenResult
 
 from tmc_msgs.msg import TalkRequestAction, TalkRequestGoal, Voice
@@ -12,6 +12,8 @@ import speech_recognition as sr
 from recogniser import ASR
 import time
 import numpy as np
+
+EXIT_WORDS = ["stop", "cancel", "finish", "exit", "terminate", "quit"]
 
 
 class SpeechServer(object):
@@ -37,6 +39,9 @@ class SpeechServer(object):
 
         self._as = SimpleActionServer("speak_and_listen", SpeakAndListenAction, execute_cb=self.speak_and_listen_cb, auto_start=False)
         self._as.start()
+
+        self._hotword_as = SimpleActionServer("hotword_listen", HotwordListenAction, execute_cb=self.hotword_listen_cb, auto_start=False)
+        self._hotword_as.start()
 
     def speak(self, text):
 
@@ -76,21 +81,65 @@ class SpeechServer(object):
 
             timelimit = time.time() + timeout if timeout else np.inf
 
+            answer, param, confidence, transcription, succeeded = "", "", 0.0, "", False
+
             while timelimit - time.time() > 0:
-                results = asr.main(source, candidates, params)
-                rospy.logwarn('Answer: %s, Confidence: %s' % (results[0], results[2]))
-                if results[-1]:
-                    self._result.answer, self._result.param, self._result.confidence, self._result.transcription, self._result.succeeded = results
-                    self._as.set_succeeded(self._result)
-                    self.speak("OK. You said " + results[0])
-                    return
+                answer, param, confidence, transcription, succeeded = asr.main(source, candidates, params)
+                rospy.logwarn('Answer: %s, Confidence: %s' % (answer, confidence))
+                if succeeded:
+                    break
                 else:
-                    self._feedback.answer, self._feedback.param, self._feedback.confidence, self._feedback.transcription, _ = results
+                    self._feedback.answer, self._feedback.param, self._feedback.confidence, self._feedback.transcription = answer, param, confidence, transcription
                     self._feedback.remaining = timelimit - time.time() if timeout else 0
                     self._as.publish_feedback(self._feedback)
 
-            self.recognizer.adjust_for_ambient_noise(source)
-            self.speak("Sorry, I didn't get it.")
+            if succeeded:
+                self.speak("OK. You said " + answer)
+            else:
+                self.speak("Sorry, I didn't get it.")
+                self.recognizer.adjust_for_ambient_noise(source)
+
+            self._result.answer, self._result.param, self._result.confidence, self._result.transcription, self._result.succeeded = answer, param, confidence, transcription, succeeded
+            self._as.set_succeeded(self._result)
+
+    def hotword_listen_cb(self, goal):
+
+        timeout = goal.timeout
+
+        rospy.logwarn("HotwordListen action started:")
+
+        if self._hotword_as.is_preempt_requested():
+            rospy.logwarn('%s: Preempted' % self._action_name)
+            self._hotword_as.set_preempted()
+            return
+
+        asr = ASR(self.recognizer, "self.wavenet")
+
+        with sr.Microphone() as source:
+            print("Started recording...")
+
+            timelimit = time.time() + timeout if timeout else np.inf
+
+            answer, confidence, succeeded = "", 0.0, False
+
+            while timelimit - time.time() > 0:
+                answer, _, confidence, _, succeeded = asr.main(source, EXIT_WORDS, [])
+                rospy.logwarn('Answer: %s, Confidence: %s' % (answer, confidence))
+                if succeeded:
+                    break
+                else:
+                    self._feedback.confidence = confidence
+                    self._feedback.remaining = timelimit - time.time() if timeout else 0
+                    self._hotword_as.publish_feedback(self._feedback)
+
+            if succeeded:
+                self.speak("OK. You said " + answer)
+            else:
+                self.speak("Sorry, I didn't get it.")
+                self.recognizer.adjust_for_ambient_noise(source)
+
+            self._result.confidence, self._result.succeeded = confidence, succeeded
+            self._hotword_as.set_succeeded(self._result)
 
 
 if __name__ == '__main__':

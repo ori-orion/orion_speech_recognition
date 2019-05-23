@@ -33,6 +33,9 @@ rosrun orion_asr speech_server.py
 ## Test Action Server
 
 You can test the action server by sending a goal to it, using the axclient GUI tool.  
+
+### SpeakAndListen Action
+
 ```
 rosrun actionlib axclient.py /speak_and_listen orion_actions/SpeakAndListenAction
 ```
@@ -62,6 +65,25 @@ timeout: 0.0
 ```
 
 Example output 2:
+```
+answer: "Brian Smith"
+param: "Smith"
+confidence: 0.909090936184
+succeeded: True
+```
+
+### HotwordListen Action
+
+```
+rosrun actionlib axclient.py /hotword_listen orion_actions/HotwordListenAction
+```
+
+Example input 1:
+```
+timeout: 0.0
+```
+
+Example output 1:
 ```
 answer: "Brian Smith"
 param: "Smith"
