@@ -92,7 +92,6 @@ class SpeechServer(object):
                     self._feedback.answer, self._feedback.param, self._feedback.confidence, self._feedback.transcription = answer, param, confidence, transcription
                     self._feedback.remaining = timelimit - time.time() if timeout else 0
                     self._as.publish_feedback(self._feedback)
-                    self.speak("Say it again?")
 
             if succeeded:
                 self.speak("OK. You said " + answer)
