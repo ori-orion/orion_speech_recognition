@@ -79,7 +79,7 @@ class ASR(object):
             score = 0
             m = int(len(candidate))
             for j, transcription in enumerate(transcriptions):
-                for i in range(max(len(transcription) - m, 1)):
+                for i in range(max(len(transcription) - m + 1, 1)):
                     subtext = transcription[i:i+m]
                     score = max(Levenshtein.ratio(candidate, subtext), score)
                 scores[i_cand, j] = score
