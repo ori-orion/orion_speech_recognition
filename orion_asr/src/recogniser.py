@@ -64,7 +64,7 @@ class ASR(object):
 
     def record(self, audio_source, candidates):
         try:
-            audio = self.rec.listen(audio_source, timeout=5.0, phrase_time_limit=5.0)
+            audio = self.rec.record(audio_source, duration=5.0)
             self.transcribe(audio, candidates)
         except sr.WaitTimeoutError as e:
             pass
