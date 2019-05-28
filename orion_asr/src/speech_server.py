@@ -8,7 +8,7 @@ from orion_actions.msg import SpeakAndListenAction, SpeakAndListenGoal, SpeakAnd
 
 from tmc_msgs.msg import TalkRequestAction, TalkRequestGoal, Voice
 import speech_recognition as sr
-from wavenet.recognize import WaveNet
+# from wavenet.recognize import WaveNet
 from recogniser import ASR
 import time, os
 import numpy as np

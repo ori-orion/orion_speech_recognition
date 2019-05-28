@@ -107,6 +107,7 @@ venv.bak/
 .mypy_cache/
 
 orion_asr/src/wavenet/asset/*
+orion_asr/src/tmp/*
 */__pycache__/
 orion_asr/src/tmp/*
 .idea

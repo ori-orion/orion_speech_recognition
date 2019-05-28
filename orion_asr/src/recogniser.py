@@ -62,10 +62,17 @@ class ASR(object):
             self.audios.append(audio)
             self.transcription[0] += " " + str(text)
 
-    def record(self, audio_source, candidates):
+    def record(self, audio_source, candidates, save=True):
         try:
             audio = self.rec.record(audio_source, duration=5.0)
             self.transcribe(audio, candidates)
+            if save:
+                wav = audio.get_wav_data(16000)
+                tmp_filename = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                            "tmp/%s.wav" % int(time.time()))
+                print("Saving wav...")
+                with open(tmp_filename, "wb") as f:
+                    f.write(wav)
         except sr.WaitTimeoutError as e:
             pass
         sentence, confidence, transcription = self.classify(candidates, self.transcription)
