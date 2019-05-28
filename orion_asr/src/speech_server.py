@@ -144,7 +144,7 @@ class SpeechServer(object):
         detector.terminate()
 
         if detected["hotword"]:
-            snowboydecoder.play_audio_file()
+            self.speak("You said " + detected["hotword"])
 
         rospy.loginfo("Finishing hotword detection...")
 
