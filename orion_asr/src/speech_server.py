@@ -12,6 +12,7 @@ import speech_recognition as sr
 from recogniser import ASR
 import time, os
 import numpy as np
+from record import Recorder
 
 from snowboy import snowboydecoder
 
@@ -73,8 +74,10 @@ class SpeechServer(object):
             self.speak(question)
 
         asr = ASR(self.recognizer, "self.wavenet")
+        asr.set_candidates(candidates, params)
 
-        with sr.Microphone() as source:
+        # with sr.Microphone() as source:
+        with Recorder() as source:
             rospy.loginfo("Started recording...")
 
             timelimit = time.time() + timeout if timeout else np.inf
@@ -88,7 +91,7 @@ class SpeechServer(object):
                     self._snl_as.set_preempted()
                     return
 
-                answer, param, confidence, transcription, succeeded = asr.main(source, candidates, params)
+                answer, param, confidence, transcription, succeeded = asr.record(source)
                 rospy.logwarn('Answer: %s, Confidence: %s' % (answer, confidence))
                 if succeeded:
                     break

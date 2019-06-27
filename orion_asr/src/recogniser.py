@@ -5,6 +5,9 @@ import speech_recognition as sr
 import Levenshtein, threading, time
 import numpy as np
 import rospy
+from record import Recorder
+from logmmse import logmmse
+
 
 class ASR(object):
 
@@ -15,69 +18,80 @@ class ASR(object):
         self.audios = []
         self.transcription = [""]
         self.thresh = thresh
+        self.candidates_parsed = []
+        self.params_index = []
 
-    def transcribe(self, audio, candidates):
-        text = ""
+    def set_candidates(self, candidates, params):
+        for i_cand, candidate in enumerate(candidates):
+            if params and "<param>" in candidate:
+                for i_param, param in enumerate(params):
+                    self.candidates_parsed.append(candidate.replace("<param>", param))
+                    self.params_index.append(i_param)
+            else:
+                self.candidates_parsed.append(candidate)
+                self.params_index.append(-1)
 
-        if self.google_available:
-            print("Google ASR...")
-            try:
-                text = self.rec.recognize_google(audio)
-            except sr.UnknownValueError:
-                print("Google Speech Recognition could not understand audio")
-            except Exception as e:
-                print(e)
-                self.google_available = False
-                self.transcription = [self.transcription[0] for _ in range(2)]
+    def transcribe(self, filename):
+        with sr.AudioFile(filename) as source:
+            audio = self.rec.record(source)
+            text = ""
 
-        if not self.google_available:
-                
-            print("Sphinx ASR + WaveNet...")
-
-            def transcribe_sphinx(aud):
+            if self.google_available:
+                print("Google ASR...")
                 try:
-                    sphinx_text = self.rec.recognize_sphinx(aud)
-                    self.transcription[1] += " " + str(sphinx_text)
+                    text = self.rec.recognize_google(audio)
                 except sr.UnknownValueError:
-                    rospy.logerr("Sphinx could not understand audio")
+                    print("Google Speech Recognition could not understand audio")
                 except Exception as e:
-                    rospy.logerr(e)
+                    print(e)
+                    self.google_available = False
+                    self.transcription = [self.transcription[0] for _ in range(2)]
 
-            th = threading.Thread(target=transcribe_sphinx, args=(audio,))
-            th.start()
-            #
-            # try:
-            #     wav = audio.get_wav_data(16000)
-            #     tmp_filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "tmp/%s.wav" % int(time.time()))
-            #     with open(tmp_filename, "wb") as f:
-            #         f.write(wav)
-            #     text = self.wavenet.transcribe(tmp_filename)
-            #     os.remove(tmp_filename)
-            # except Exception as e:
-            #     rospy.logerr(e)
+            if not self.google_available:
 
-            th.join()
+                print("Sphinx ASR + WaveNet...")
 
-        if text:
-            self.audios.append(audio)
-            self.transcription[0] += " " + str(text)
+                def transcribe_sphinx(aud):
+                    try:
+                        sphinx_text = self.rec.recognize_sphinx(aud)
+                        self.transcription[1] += " " + str(sphinx_text)
+                    except sr.UnknownValueError:
+                        rospy.logerr("Sphinx could not understand audio")
+                    except Exception as e:
+                        rospy.logerr(e)
 
-    def record(self, audio_source, candidates, save=True):
+                th = threading.Thread(target=transcribe_sphinx, args=(audio,))
+                th.start()
+
+                # if tmp_filename:
+                #     try:
+                #         text = self.wavenet.transcribe(tmp_filename)
+                #     except Exception as e:
+                #         rospy.logerr(e)
+
+                th.join()
+
+            if text:
+                self.audios.append(audio)
+                self.transcription[0] += " " + str(text)
+
+    def record(self, audio_source):
         try:
-            audio = self.rec.record(audio_source, duration=5.0)
-            self.transcribe(audio, candidates)
-            if save:
-                wav = audio.get_wav_data(16000)
-                tmp_filename = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                            "tmp/%s.wav" % int(time.time()))
-                print("Saving wav...")
-                with open(tmp_filename, "wb") as f:
-                    f.write(wav)
+            # audio = self.rec.record(audio_source, duration=5.0)
+            data = audio_source.run()
+            npdata = np.fromstring(data, dtype=np.int16)
+            print("Filtering and saving wav...")
+            filename = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                    "tmp/%s.wav" % int(time.time()))
+            logmmse(npdata, audio_source.config['RATE'], output_file=filename)
+            self.transcribe(filename)
         except sr.WaitTimeoutError as e:
             pass
-        sentence, confidence, transcription = self.classify(candidates, self.transcription)
+        sentence, confidence, transcription = self.classify(self.candidates_parsed, self.transcription)
         print(self.transcription, sentence, confidence)
-        return sentence, confidence, transcription, confidence > self.thresh
+        i_param = self.params_index[self.candidates_parsed.index(sentence)] if sentence else -1
+        param = params[i_param] if i_param >= 0 else ""
+        return sentence, param, confidence, transcription, confidence > self.thresh
 
     @staticmethod
     def classify(candidates, transcriptions):
@@ -97,23 +111,6 @@ class ASR(object):
         print(candidates[i_cand], scores[i_cand, i_trans], transcriptions[i_trans])
         return candidates[i_cand], scores[i_cand, i_trans], transcriptions[i_trans]
 
-    def main(self, source, candidates, params):
-        candidates_parsed = []
-        params_index = []
-        for i_cand, candidate in enumerate(candidates):
-            if params and "<param>" in candidate:
-                for i_param, param in enumerate(params):
-                    candidates_parsed.append(candidate.replace("<param>", param))
-                    params_index.append(i_param)
-            else:
-                candidates_parsed.append(candidate)
-                params_index.append(-1)
-
-        sentence, confidence, transcription, succeeded = self.record(source, candidates_parsed)
-        i_param = params_index[candidates_parsed.index(sentence)] if sentence else -1
-        param = params[i_param] if i_param >= 0 else ""
-        return sentence, param, confidence, transcription, succeeded
-        
 
 if __name__ == "__main__":
     recognizer = sr.Recognizer()
@@ -121,11 +118,13 @@ if __name__ == "__main__":
 
     print("Instantiating ASR...")
     asr = ASR(recognizer, "wavenet")
-
     candidates = ['search for objects', 'tidy up', 'bring me something', 'learn new object', 'go to start', "bring me a <param>"]
     params = ["banana", "tomato", "peach", "toothbrush", "apple"]
 
+    asr.set_candidates(candidates, params)
+
     # print(asr.classify(candidates, transcription))
-    with sr.Microphone() as source:
+    # with sr.Microphone() as source:
+    with Recorder() as source:
         print("Started recording...")
-        print(asr.main(source, candidates, params))
+        print(asr.record(source))
