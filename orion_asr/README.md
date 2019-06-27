@@ -24,6 +24,10 @@ Create a directory:
 orion_asr/src/tmp
 ```
 
+## Run HSR simulation
+HSR simulation needs to be started for the talk action to work
+```roslaunch hsrb_gazebo_launch hsrb_megaweb2015_world.launch```
+
 ## Run Action Server
 You can run the speech recognition server with the following:
 ```

@@ -19,17 +19,17 @@ class ASR(object):
         self.transcription = [""]
         self.thresh = thresh
         self.candidates_parsed = []
-        self.params_index = []
+        self.candidates_params = []
 
     def set_candidates(self, candidates, params):
-        for i_cand, candidate in enumerate(candidates):
+        for candidate in candidates:
             if params and "<param>" in candidate:
-                for i_param, param in enumerate(params):
+                for param in params:
                     self.candidates_parsed.append(candidate.replace("<param>", param))
-                    self.params_index.append(i_param)
+                    self.candidates_params.append(param)
             else:
                 self.candidates_parsed.append(candidate)
-                self.params_index.append(-1)
+                self.candidates_params.append("")
 
     def transcribe(self, filename):
         with sr.AudioFile(filename) as source:
@@ -75,22 +75,21 @@ class ASR(object):
                 self.audios.append(audio)
                 self.transcription[0] += " " + str(text)
 
-    def record(self, audio_source):
+    def record(self, audio_source, config):
         try:
             # audio = self.rec.record(audio_source, duration=5.0)
-            data = audio_source.run()
+            data = next(audio_source)
             npdata = np.fromstring(data, dtype=np.int16)
             print("Filtering and saving wav...")
             filename = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                     "tmp/%s.wav" % int(time.time()))
-            logmmse(npdata, audio_source.config['RATE'], output_file=filename)
+            logmmse(npdata, config['RATE'], output_file=filename)
             self.transcribe(filename)
         except sr.WaitTimeoutError as e:
             pass
         sentence, confidence, transcription = self.classify(self.candidates_parsed, self.transcription)
         print(self.transcription, sentence, confidence)
-        i_param = self.params_index[self.candidates_parsed.index(sentence)] if sentence else -1
-        param = params[i_param] if i_param >= 0 else ""
+        param = self.candidates_params[self.candidates_parsed.index(sentence)] if sentence else ""
         return sentence, param, confidence, transcription, confidence > self.thresh
 
     @staticmethod
@@ -125,6 +124,9 @@ if __name__ == "__main__":
 
     # print(asr.classify(candidates, transcription))
     # with sr.Microphone() as source:
-    with Recorder() as source:
+
+    with Recorder() as rec:
         print("Started recording...")
-        print(asr.record(source))
+        gen = rec.frames_generator()
+        print(asr.record(gen, rec.config))
+        print(asr.record(gen, rec.config))

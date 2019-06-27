@@ -16,8 +16,6 @@ from record import Recorder
 
 from snowboy import snowboydecoder
 
-EXIT_WORDS = ["stop", "cancel", "finish", "exit", "terminate", "quit"]
-
 
 class SpeechServer(object):
     # create messages that are used to publish feedback/result
@@ -77,7 +75,9 @@ class SpeechServer(object):
         asr.set_candidates(candidates, params)
 
         # with sr.Microphone() as source:
-        with Recorder() as source:
+        with Recorder() as rec:
+            source = rec.frames_generator()
+
             rospy.loginfo("Started recording...")
 
             timelimit = time.time() + timeout if timeout else np.inf
@@ -91,7 +91,7 @@ class SpeechServer(object):
                     self._snl_as.set_preempted()
                     return
 
-                answer, param, confidence, transcription, succeeded = asr.record(source)
+                answer, param, confidence, transcription, succeeded = asr.record(source, rec.config)
                 rospy.logwarn('Answer: %s, Confidence: %s' % (answer, confidence))
                 if succeeded:
                     break
@@ -100,14 +100,13 @@ class SpeechServer(object):
                     self._snl_feedback.remaining = timelimit - time.time() if timeout else 0
                     self._snl_as.publish_feedback(self._snl_feedback)
 
-            if succeeded:
-                self.speak("OK. You said " + answer)
-            else:
-                self.speak("Sorry, I didn't get it.")
-                self.recognizer.adjust_for_ambient_noise(source)
+        if succeeded:
+            self.speak("OK. You said " + answer)
+        else:
+            self.speak("Sorry, I didn't get it.")
 
-            self._snl_result.answer, self._snl_result.param, self._snl_result.confidence, self._snl_result.transcription, self._snl_result.succeeded = answer, param, confidence, transcription, succeeded
-            self._snl_as.set_succeeded(self._snl_result)
+        self._snl_result.answer, self._snl_result.param, self._snl_result.confidence, self._snl_result.transcription, self._snl_result.succeeded = answer, param, confidence, transcription, succeeded
+        self._snl_as.set_succeeded(self._snl_result)
 
     def hotword_listen_cb(self, goal):
 
