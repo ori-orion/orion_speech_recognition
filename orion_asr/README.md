@@ -24,6 +24,10 @@ Create a directory:
 orion_asr/src/tmp
 ```
 
+## Run HSR simulation
+HSR simulation needs to be started for the talk action to work
+```roslaunch hsrb_gazebo_launch hsrb_megaweb2015_world.launch```
+
 ## Run Action Server
 You can run the speech recognition server with the following:
 ```
@@ -33,6 +37,9 @@ rosrun orion_asr speech_server.py
 ## Test Action Server
 
 You can test the action server by sending a goal to it, using the axclient GUI tool.  
+
+### SpeakAndListen Action
+
 ```
 rosrun actionlib axclient.py /speak_and_listen orion_actions/SpeakAndListenAction
 ```
@@ -57,11 +64,30 @@ Example input 2:
 ```
 question: 'What do you want me to do?'
 candidates: ['search for objects', 'tidy up', 'bring me something', 'learn new object', 'go to start', "bring me a <param>"]
-params = ["banana", "tomato", "peach", "toothbrush", "apple"]
+params: ["banana", "tomato", "peach", "toothbrush", "apple"]
 timeout: 0.0
 ```
 
 Example output 2:
+```
+answer: "Brian Smith"
+param: "Smith"
+confidence: 0.909090936184
+succeeded: True
+```
+
+### HotwordListen Action
+
+```
+rosrun actionlib axclient.py /hotword_listen orion_actions/HotwordListenAction
+```
+
+Example input 1:
+```
+timeout: 0.0
+```
+
+Example output 1:
 ```
 answer: "Brian Smith"
 param: "Smith"

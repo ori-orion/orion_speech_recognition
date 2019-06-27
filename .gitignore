@@ -6,8 +6,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
-*.so
+## C extensions
+# *.so
 
 # Distribution / packaging
 .Python
@@ -106,7 +106,8 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-orion_asr/src/wavenet/.git
+orion_asr/src/wavenet/asset/*
+orion_asr/src/tmp/*
 */__pycache__/
 orion_asr/src/tmp/*
 .idea
