@@ -89,11 +89,18 @@ class Recorder(object):
 
     def graph(self, frames, show=True):
         plt.gcf().clear()
-        plt.subplot(2, 1, 1)
+        ax1 = plt.subplot(2, 1, 1)
         pxx, freq, time = self.spectrogram(frames, show=True)
-        plt.subplot(2, 1, 2)
+        ax1.title.set_text('Spectrogram')
+        ax1.set_ylabel('frequency [Hz]')
+        ax1.set_xlabel('time [s]')
+        ax2 = plt.subplot(2, 1, 2)
         rms_energy_arr = self.rmsenergy(pxx)
         plt.plot(time, np.log10(rms_energy_arr))
+        ax2.title.set_text('Signal RMS energy')
+        ax2.set_ylabel('RMS energy')
+        ax2.set_xlabel('time [s]')
+        plt.subplots_adjust(hspace=0.4)
         if show:
             plt.show()
 
