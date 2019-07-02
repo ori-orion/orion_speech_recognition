@@ -55,7 +55,7 @@ class Recorder(object):
                 if rms_energy < max_energy / 4 or not self.is_recording:
                     break
 
-            self.data.append(frames)
+            self.data.append((frames, max_energy))
 
         stream.stop_stream()
         stream.close()
@@ -66,8 +66,9 @@ class Recorder(object):
         while self.is_recording:
             while i >= len(self.data):
                 Time.sleep(0.1)
-            data = b''.join(self.data[i])
-            yield data
+            frames, max_energy = self.data[i]
+            data = b''.join(frames)
+            yield data, max_energy
             i += 1
 
     def spectrogram(self, frames, show=False):
@@ -100,7 +101,7 @@ class Recorder(object):
 if __name__ == "__main__":
     with Recorder() as rec:
         gen = rec.frames_generator()
-        data = next(gen)
+        data, _ = next(gen)
         rec.graph(data)
-        data = next(gen)
+        data, _ = next(gen)
         rec.graph(data)

@@ -79,10 +79,10 @@ class ASR(object):
     def record(self, audio_source, config):
         try:
             # audio = self.rec.record(audio_source, duration=5.0)
-            data = next(audio_source)
+            data, max_energy = next(audio_source)
             npdata = np.fromstring(data, dtype=np.int16).astype(np.float64)
             absmax = np.abs(npdata).max()
-            npdata = (npdata * 32000.0 / absmax).astype(np.int16)
+            npdata = (npdata * 32000/absmax * 10/np.log(max_energy)).astype(np.int16)
             print("Filtering and saving wav...")
             filename = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                     "tmp/%s.wav" % int(time.time()))
