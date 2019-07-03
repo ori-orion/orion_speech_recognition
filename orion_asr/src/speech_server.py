@@ -116,9 +116,7 @@ class SpeechServer(object):
 
         rospy.logwarn("HotwordListen action started:")
 
-        hotword_options = ["bambam", "cancel", "ready"]
-        if hotwords:
-            hotword_options = [hotword for hotword in hotwords if hotword in hotword_options]
+        hotword_options = [hotword.lower() for hotword in hotwords]
 
         detected = {"hotword": ""}
 
