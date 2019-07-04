@@ -1,5 +1,5 @@
-# orion-speech-recognition
-Repo for speech recognition capabilities for the ORIon robot
+# Speech Recognition using Julius
+Speech recognition using Julius, which is built into the HSR. Requires manual customisation of language model dictionaries for each task.
 
 ## Setup on the robot
 ### Disable speech recognition on the robot (HSR)
