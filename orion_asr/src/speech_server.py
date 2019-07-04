@@ -110,13 +110,25 @@ class SpeechServer(object):
 
     def hotword_listen_cb(self, goal):
 
+        dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "snowboy/resources")
+
         timeout = goal.timeout
         hotwords = goal.hotwords
         timelimit = time.time() + timeout if timeout else np.inf
 
         rospy.logwarn("HotwordListen action started:")
 
-        hotword_options = [hotword.lower() for hotword in hotwords]
+        if not hotwords:
+            raise Exception("No hotwords passed as arguments")
+
+        hotword_options = []
+
+        for hotword in hotwords:
+            hotword = hotword.lower()
+            if hotword + ".pmdl" in os.listdir(dir_path):
+                hotword_options.append(hotword)
+            else:
+                rospy.logerr("Requested hotword (%s) not trained" % hotword)
 
         detected = {"hotword": ""}
 
@@ -133,7 +145,6 @@ class SpeechServer(object):
                 return True
             return detected["hotword"] != ""
 
-        dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "snowboy/resources")
         models = [os.path.join(dir_path, s + '.pmdl') for s in hotword_options]
 
         detector = snowboydecoder.HotwordDetector(models, sensitivity=0.5)
