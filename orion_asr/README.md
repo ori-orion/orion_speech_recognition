@@ -63,7 +63,9 @@ For hotword detection, create an account for Snowboy [https://snowboy.kitt.ai/],
 
 ## Run HSR simulation (not required when running on robot)
 HSR simulation needs to be started for the talk action to work
-```roslaunch hsrb_gazebo_launch hsrb_megaweb2015_world.launch```
+```
+roslaunch hsrb_gazebo_launch hsrb_megaweb2015_world.launch
+```
 
 ## Run Action Server
 You can run the speech recognition server with the following:
