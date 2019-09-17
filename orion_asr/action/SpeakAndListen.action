@@ -1,0 +1,26 @@
+# Define the goal
+# Question string is optional. If it is blank ("" or None), the robot just listens.
+# Candidate sentences can be ['search for objects', 'tidy up', 'bring me something', 'learn new object', 'go to start']
+# A candidate sentence can include one optional parameters, such as "bring me <param>", where params = ['an apple', 'a banana']
+# timeout = 0 will disable timeout
+string question
+string[] candidates
+string[] params
+float32 timeout
+---
+# Define the result
+# Answer is the sentence with <param> replaced by the most likely parameter (if any)
+string answer
+string param
+float32 confidence
+string transcription
+bool succeeded
+---
+# Define a feedback message
+# feedback sent when potential answer achieved but confidence too low
+# timeout or failure if remaining < 0
+float32 remaining
+string answer
+string param
+float32 confidence
+string transcription

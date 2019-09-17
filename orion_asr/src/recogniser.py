@@ -6,6 +6,7 @@ import Levenshtein, threading, time
 import numpy as np
 import rospy
 from record import Recorder
+import scipy
 from logmmse import logmmse
 
 
@@ -78,12 +79,15 @@ class ASR(object):
     def record(self, audio_source, config):
         try:
             # audio = self.rec.record(audio_source, duration=5.0)
-            data = next(audio_source)
-            npdata = np.fromstring(data, dtype=np.int16)
+            data, max_energy = next(audio_source)
+            npdata = np.fromstring(data, dtype=np.int16).astype(np.float64)
+            absmax = np.abs(npdata).max()
+            npdata = (npdata * 32000/absmax * 10/np.log(max_energy)).astype(np.int16)
             print("Filtering and saving wav...")
             filename = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                     "tmp/%s.wav" % int(time.time()))
             logmmse(npdata, config['RATE'], output_file=filename)
+            # scipy.io.wavfile.write(filename, config['RATE'], npdata)
             self.transcribe(filename)
         except sr.WaitTimeoutError as e:
             pass

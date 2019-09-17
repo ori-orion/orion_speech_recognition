@@ -1,119 +1,27 @@
-# orion-speech-recognition
+# ORIon Speech Recognition
 Repo for speech recognition capabilities for the ORIon robot
 
-## Setup on the robot
-### Disable speech recognition on the robot (HSR)
+## ORIon HRI
+Used for 2018 competition.
+Implements Speech recognition using Julius, which is built into the HSR. 
+Works offline, but requires manual customisation of language model dictionaries for each task.
 
-See https://docs.hsr.io/manual_en/development/speech_recognition.html#stop-speech-recognition
+## ORIon ASR
+Used for 2019 competition.
+Allows general speech recognition using Speech to Text models and Snowboy hotword detection. 
 
-### Use roslaunch to get all nodes up (Bring me task)
+`SpeakAndListen` action uses Google Speech to Text API as a primary method for speech to text transcription. When the 
+Wi-Fi is unavailable or slow, which is an expected scenario for robotics competitions, we have offline fall-back alternatives,
+which uses PocketSphinx and WaveNet. 
 
-```
-roslaunch orion_hri orion_hri.launch
-```
+`HotwordListen` action uses Snowboy [https://snowboy.kitt.ai], a cloud service that trains models that can be used for offline hotword detection. 
+Multiple hotword candidates can be passed to the action so that it would return when any one of them are detected. 
 
-## Using the simulator / standalone machine (ignore when using HSR)
+Speech to text is suited for common words and phrase, whereas hotword detection is suited for rarer vocabulary, is rapid and works offline.
 
-When using simulator you need to start several services and action servers
+### Potential future work
+Works as it is now, but may be ideal to integrate the two so that ORIon ASR is used when Wi-Fi is available and the fall-back is either using Julius (or Kaldi) when it's trained, or PocketSphinx/WaveNet when it's not.
+Basic noise reduction and volume adjustment is performed, but could be improved. 
+Some other tasks may require identifying the speech direction using ICA on multiple microphones, identifying individual speakers, or detection of certain sounds such as door knocking.
 
-### Use roslaunch to get all nodes up (Bring me task)
-
-```
-roslaunch orion_hri orion_hri.launch
-```
-
-Speech Synthesize:
-```
-roslaunch tmc_talk_action_simulator talk_action_simulator.launch
-```
-
-## Manual Setup and Configuration Options
-### Setting up the right dictionaries for the grammar (manually)
-
-Adding the WRC dictionary:
-```
- rosservice call /hsrb/voice/add_dictionary 1 1 `rospack find orion_hri`/dics/wrc_grammar_en/wrc_bring_me '[]' "/etc/opt/tmc/robot/conf.d/dics/wrc_grammar_en"
-```
-
-De-activate other dictionaries:
-```
-rosservice call /hsrb/voice/activate_dictionaries '{names: [grammar_sample], active: False}'
-```
-Note: adjust name of the dictionary, here: `grammar_sample`
-
-Checking the status:
-```
-rosservice call /hsrb/voice/list_dictionaries '{with_refresh: False}'
-```
-### Running the high-level (wait-for-input) action server
-
-This is the high-level action server 
-
-Starting the server:
-```
-rosrun orion_hri wait_for_input_server.py
-```
-
-Calling the action server using an action client:
-```
-rosrun actionlib axclient.py /wait_for_input orion_hri/WaitForInputAction
-```
-Example arguments for the Goal:
-```
-question: 'What can I do for you?'
-possible_inputs: ['bring me objects', 'search for objects', 'move to start', 'learn new object', 'tidy up rooms']
-timeout: 0.0
-```
-Note that the possible inputs _must_ be included in the grammar model. The result is a string called `input`.
-
-### Running the bring-me action server
-
-Starting the server:
-```
-rosrun orion_hri bring_me_server.py
-```
-
-Calling the action server using an action client:
-```
-rosrun actionlib axclient.py /wait_for_instruction orion_hri/WaitForInstructionAction
-```
-Note: No arguments are given. The result is a list of objects.
-
-
-### Running the wait-for-confirmation action server
-
-This is a generic server that asks a question and waits for an answer. 
-
-Starting the server:
-```
-rosrun orion_hri wait_for_confirmation_server.py
-```
-
-Calling the action server using an action client:
-```
-rosrun actionlib axclient.py /wait_for_confirmation orion_hri/WaitForConfirmationAction
-```
-Example arguments for the Goal:
-```
-question: 'Hello, can I help you?'
-positive_answers: ['yes please']
-negative_answers: ['no thanks']
-timeout: 0.0
-```
-Note that the positive and negative answers _must_ be included in the grammar model. The result is a boolean flag called `is_confirmed`.
-
-### Rebuilding the grammar
-
-```
-cd ~/catkin_ws/src/orion_speech_recognition/orion_hri/dics
-rosrun tmc_rosjulius mkdfa.sh wrc_grammar
-sudo cp -r ~/catkin_ws/src/orion_hri/dics/wrc_grammar_en/ /etc/opt/tmc/robot/conf.d/dics/
-```
-
-
-
-
-
-
-
-
+Please refer to README files in subdirectories for more information.

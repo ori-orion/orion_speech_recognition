@@ -13,8 +13,7 @@ from recogniser import ASR
 import time, os
 import numpy as np
 from record import Recorder
-
-from snowboy import snowboydecoder
+from hotword import HotwordDetector
 
 
 class SpeechServer(object):
@@ -111,46 +110,30 @@ class SpeechServer(object):
     def hotword_listen_cb(self, goal):
 
         timeout = goal.timeout
+        hotwords = goal.hotwords
         timelimit = time.time() + timeout if timeout else np.inf
 
         rospy.logwarn("HotwordListen action started:")
 
-        hotword_options = ["bambam", "cancel"]
-
-        detected = {"hotword": ""}
-
-        def detected_callback(ind):
-            detected["hotword"] = hotword_options[ind]
-            rospy.loginfo("Detected hotword: " + detected["hotword"])
-
-        def interrupt_callback():
+        def preempt_callback():
             if self._hotword_as.is_preempt_requested():
                 rospy.logwarn('%s: Preempted' % self._action_name)
                 self._hotword_as.set_preempted()
                 return True
             if timelimit - time.time() <= 0:
                 return True
-            return detected["hotword"] != ""
+            return False
 
-        dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "snowboy/resources")
-        models = [os.path.join(dir_path, s + '.pmdl') for s in hotword_options]
+        detector = HotwordDetector(hotwords, preempt_callback)
+        detector.run()
 
-        detector = snowboydecoder.HotwordDetector(models, sensitivity=0.5)
-        rospy.loginfo('Started listening to hotwords...')
+        if detector.detected_hotword:
+            rospy.loginfo("Identified hotword: %s" % detector.detected_hotword)
+            self.speak("You said " + detector.detected_hotword)
+        else:
+            rospy.loginfo("No hotword detected")
 
-        # main loop
-        detector.start(detected_callback=detected_callback,
-                       interrupt_check=interrupt_callback,
-                       sleep_time=0.03)
-
-        detector.terminate()
-
-        if detected["hotword"]:
-            self.speak("You said " + detected["hotword"])
-
-        rospy.loginfo("Finishing hotword detection...")
-
-        self._hotword_result.hotword, self._hotword_result.succeeded = detected["hotword"], detected["hotword"] != ""
+        self._hotword_result.hotword, self._hotword_result.succeeded = detector.detected_hotword, detector.detected_hotword != ""
         self._hotword_as.set_succeeded(self._hotword_result)
 
 
