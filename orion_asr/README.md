@@ -57,6 +57,8 @@ Cloned from https://github.com/buriburisuri/speech-to-text-wavenet in /wavenet d
 
 ## Setup
 
+Please read the `setup.md` for setup instructions for ROS and the catkin workspace.
+
 Create a directory to store audio recording:
 ```
 orion_asr/src/tmp
