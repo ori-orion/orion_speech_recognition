@@ -46,6 +46,10 @@ sugartensor == 1.0.0.2
 pandas >= 0.19.2
 librosa == 0.6.2
 scikits.audiolab==0.11.0
+pyyaml
+rospkg
+matplotlib
+logmmse
 ```
 
 ## WaveNet

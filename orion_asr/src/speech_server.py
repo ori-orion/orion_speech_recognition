@@ -31,11 +31,11 @@ class SpeechServer(object):
 
         self.output_text = SimpleActionClient('talk_request_action', TalkRequestAction)
         rospy.loginfo("Waiting for talk_request_action...")
-        self.output_text.wait_for_server()
+        self.output_text.wait_for_server(timeout=rospy.Duration(5))
         rospy.loginfo("Speech action started")
 
         # self.wavenet = WaveNet()
-        
+
         rospy.logwarn("SpeechServer started:")
 
         self._snl_as = SimpleActionServer("speak_and_listen", SpeakAndListenAction, execute_cb=self.speak_and_listen_cb, auto_start=False)
