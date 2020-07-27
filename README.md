@@ -22,6 +22,10 @@ Speech to text is suited for common words and phrase, whereas hotword detection 
 ### Potential future work
 Works as it is now, but may be ideal to integrate the two so that ORIon ASR is used when Wi-Fi is available and the fall-back is either using Julius (or Kaldi) when it's trained, or PocketSphinx/WaveNet when it's not.
 Basic noise reduction and volume adjustment is performed, but could be improved. 
-Some other tasks may require identifying the speech direction using ICA on multiple microphones, identifying individual speakers, or detection of certain sounds such as door knocking.
+Some other tasks may require:
+- identifying the speech direction using ICA on multiple microphones
+- identifying individual speakers
+- detection of certain sounds such as door knocking
+- natural language processing to allow varying inputs to be classified correctly
 
 Please refer to README files in subdirectories for more information.
