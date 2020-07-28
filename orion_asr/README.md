@@ -1,7 +1,7 @@
 # General Speech Recognition
 Allows general speech recognition using Speech to Text models and Snowboy hotword detection. 
 
-Developed by Shu Ishida - contact shuishida_at_robots.ox.ac.uk for enquiries.
+Developed by Shu Ishida - contact ishida_at_robots.ox.ac.uk for enquiries.
 
 ## Actions
 There are two actions associated with it - `SpeakAndListen.action` and `HotwordListen.action`. The version used for the 
