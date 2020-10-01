@@ -16,7 +16,7 @@ and rare vocabulary / names specific to the tasks. Therefore we take a more robu
 and formulate the problem as a classification problem. While the performance will be better if we train it end-to-end, 
 we take a more naive but flexible approach of first performing speech to text, and then identifying the closest candidate to the generated text. 
 
-We have two algorithms for determining the closest candidate; Levenshtein and Sysnet similarity. Levenshtein measures the number of single letter changes that are required to change the candidate into the genereated text. Fewer changes mean a closer match. On the other hand, the Synset approach looks at the meaning of the words to find the closest match rather than just the letter arrangement. For this reason, the synset similarity performs better in most cases.  
+We have two algorithms for determining the closest candidate; Levenshtein and Sysnet similarity. Levenshtein measures the number of single letter changes that are required to change the candidate into the generated text. Fewer changes mean a closer match. On the other hand, the Synset approach looks at the meaning of the words to find the closest match rather than just the letter arrangement. For this reason, the synset similarity performs better in most cases.  
 
 Speech recognition is performed asynchronously and in parallel to speech recording; the recorded audio is streamed and when a silence 
 (determined by the RMS energy of the signal) is detected, the streaming continues but the frames before the silence is sent to the speech recogniser. Recording is done on a separate thread.
