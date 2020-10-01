@@ -4,10 +4,12 @@ import speech_recognition as sr
 # from wavenet.recognize import WaveNet
 import Levenshtein, threading, time
 import numpy as np
-import rospy
+#import rospy
 from record import Recorder
 import scipy
 from logmmse import logmmse
+
+import SS
 
 
 class ASR(object):
@@ -76,7 +78,8 @@ class ASR(object):
                 self.audios.append(audio)
                 self.transcription[0] += " " + str(text)
 
-    def record(self, audio_source, config):
+    def record(self, audio_source, config,classification_algorithm):
+
         try:
             # audio = self.rec.record(audio_source, duration=5.0)
             data, max_energy = next(audio_source)
@@ -91,13 +94,30 @@ class ASR(object):
             self.transcribe(filename)
         except sr.WaitTimeoutError as e:
             pass
-        sentence, confidence, transcription = self.classify(self.candidates_parsed, self.transcription)
-        print(self.transcription, sentence, confidence)
-        param = self.candidates_params[self.candidates_parsed.index(sentence)] if sentence else ""
-        return sentence, param, confidence, transcription, confidence > self.thresh
+        try:
+            if classification_algorithm=='synset':
+                sentence, confidence, transcription = self.classify_synset(self.candidates_parsed, self.transcription)
+            elif classification_algorithm=='levenshtein':
+                sentence, confidence, transcription = self.classify_Levenshtein(self.candidates_parsed, self.transcription)
+            else:
+                raise Exception('Please provide a valid classification algorithm, synset or levenstein')
+
+            if confidence > self.thresh:
+                print("Transcription: " +  self.transcription[0])
+                print("Most relevant task: " + sentence)
+                print("Confidence [0,1]: " + str(confidence))
+            else:
+                raise Exception("No valid task was found")
+            param = self.candidates_params[self.candidates_parsed.index(sentence)] if sentence else ""
+            return sentence, param, confidence, transcription, confidence > self.thresh
+
+        except:
+            print("please try again")
+
+            #asr.record(audio_source, config)
 
     @staticmethod
-    def classify(candidates, transcriptions):
+    def classify_Levenshtein(candidates, transcriptions):
         scores = np.zeros((len(candidates), len(transcriptions)))
         for i_cand, candidate in enumerate(candidates):
             score = 0
@@ -110,9 +130,20 @@ class ASR(object):
         i_max = np.argmax(scores)
         i_cand = i_max // len(transcriptions)
         i_trans = i_max % len(transcriptions)
-        print(scores, i_max, i_cand, i_trans, candidates)
-        print(candidates[i_cand], scores[i_cand, i_trans], transcriptions[i_trans])
         return candidates[i_cand], scores[i_cand, i_trans], transcriptions[i_trans]
+
+    @staticmethod
+    def classify_synset(candidates, transcriptions):
+        max_similarity = 0
+        for i, candidate in enumerate(candidates):
+            for j, transcription in enumerate(transcriptions):
+                sim = float(SS.synset(candidate, transcription))
+                if sim>max_similarity:
+                    c_max = i
+                    t_max = j
+                    max_similarity = sim
+        return candidates[c_max], max_similarity, transcriptions[t_max]
+
 
 
 if __name__ == "__main__":
@@ -132,5 +163,7 @@ if __name__ == "__main__":
     with Recorder() as rec:
         print("Started recording...")
         gen = rec.frames_generator()
-        print(asr.record(gen, rec.config))
-        print(asr.record(gen, rec.config))
+
+        #set similarity measure to 'levenshtein' or 'synset'. Generally synset works better as it looks at the meaning of the words rather than simply the ordering of the letters
+        asr.record(gen, rec.config, 'synset')
+        #print(asr.record(gen, rec.config))

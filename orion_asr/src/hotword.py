@@ -1,4 +1,4 @@
-import os, rospy, threading, pyaudio, time, wave
+import os, threading, pyaudio, time, wave
 from snowboy import snowboydecoder
 
 
