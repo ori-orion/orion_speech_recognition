@@ -1,4 +1,5 @@
 import os
+import sys
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import speech_recognition as sr
 # from wavenet.recognize import WaveNet
@@ -8,9 +9,10 @@ import numpy as np
 from record import Recorder
 import scipy
 from logmmse import logmmse
-
 import SS
 
+#setting the similarity measure from a command line argument
+similarity_measure = sys.argv[1]
 
 class ASR(object):
 
@@ -164,6 +166,6 @@ if __name__ == "__main__":
         print("Started recording...")
         gen = rec.frames_generator()
 
-        #set similarity measure to 'levenshtein' or 'synset'. Generally synset works better as it looks at the meaning of the words rather than simply the ordering of the letters
-        asr.record(gen, rec.config, 'synset')
+
+        asr.record(gen, rec.config, similarity_measure)
         #print(asr.record(gen, rec.config))
