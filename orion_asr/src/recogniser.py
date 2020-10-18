@@ -11,8 +11,7 @@ import scipy
 from logmmse import logmmse
 import SS
 
-#setting the similarity measure from a command line argument
-similarity_measure = sys.argv[1]
+
 
 class ASR(object):
 
@@ -80,7 +79,7 @@ class ASR(object):
                 self.audios.append(audio)
                 self.transcription[0] += " " + str(text)
 
-    def record(self, audio_source, config,classification_algorithm):
+    def record(self, audio_source, config,classification_algorithm='synset'):
 
         try:
             # audio = self.rec.record(audio_source, duration=5.0)
@@ -105,6 +104,7 @@ class ASR(object):
                 raise Exception('Please provide a valid classification algorithm, synset or levenstein')
 
             if confidence > self.thresh:
+                print("Similarity Measure: " + classification_algorithm)
                 print("Transcription: " +  self.transcription[0])
                 print("Most relevant task: " + sentence)
                 print("Confidence [0,1]: " + str(confidence))
@@ -167,5 +167,5 @@ if __name__ == "__main__":
         gen = rec.frames_generator()
 
 
-        asr.record(gen, rec.config, similarity_measure)
+        asr.record(gen, rec.config)
         #print(asr.record(gen, rec.config))
