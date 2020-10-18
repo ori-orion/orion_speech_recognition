@@ -99,6 +99,13 @@ data:
  sentence: "Hi. My name is HSR."
 ```
 
+### Setting the similarity measure
+The default similarity measure has been set to synset, it can be changed to Levenshtein through a parameter in the Record method of the ASR object (found within recogniser.py). For example: 
+
+```
+asr.record(gen, rec.config, 'Levenshtein')
+```
+
 ### SpeakAndListen Action
 
 ```
