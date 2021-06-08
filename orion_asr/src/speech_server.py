@@ -13,7 +13,8 @@ from recogniser import ASR
 import time, os
 import numpy as np
 from record import Recorder
-from hotword import HotwordDetector
+# NOTE: No longer able to use Snowboy, discontinued
+#from hotword import HotwordDetector
 
 
 class SpeechServer(object):
@@ -41,8 +42,8 @@ class SpeechServer(object):
         self._snl_as = SimpleActionServer("speak_and_listen", SpeakAndListenAction, execute_cb=self.speak_and_listen_cb, auto_start=False)
         self._snl_as.start()
 
-        self._hotword_as = SimpleActionServer("hotword_listen", HotwordListenAction, execute_cb=self.hotword_listen_cb, auto_start=False)
-        self._hotword_as.start()
+        #self._hotword_as = SimpleActionServer("hotword_listen", HotwordListenAction, execute_cb=self.hotword_listen_cb, auto_start=False)
+        #self._hotword_as.start()
 
     def speak(self, text):
 
