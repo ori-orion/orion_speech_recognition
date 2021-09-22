@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 import rospy
 
 import actionlib
@@ -31,7 +31,7 @@ class HRI():
             rospy.loginfo('Waiting for speech input: %s', self.input_text)
             data = rospy.wait_for_message(self.input_text, RecognitionResult , timeout)
             rospy.loginfo('Got speech input') 
-        except rospy.ROSException, e:
+        except rospy.ROSException:
             rospy.logwarn("Failed to get speech input from %s" % self.input_text)
         return data
 
