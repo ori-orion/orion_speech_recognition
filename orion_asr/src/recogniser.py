@@ -10,6 +10,7 @@ from record import Recorder
 import scipy
 from logmmse import logmmse
 import SS
+import rospy;
 
 
 
@@ -139,11 +140,14 @@ class ASR(object):
         max_similarity = 0
         for i, candidate in enumerate(candidates):
             for j, transcription in enumerate(transcriptions):
-                sim = float(SS.synset(candidate, transcription))
-                if sim>max_similarity:
-                    c_max = i
-                    t_max = j
-                    max_similarity = sim
+                try:       
+                    sim = float(SS.synset(candidate, transcription))
+                    if sim>max_similarity:
+                        c_max = i
+                        t_max = j
+                        max_similarity = sim
+                except Exception as e:
+                    print(e);
         return candidates[c_max], max_similarity, transcriptions[t_max]
 
 

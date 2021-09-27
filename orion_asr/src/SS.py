@@ -192,6 +192,8 @@ def word_order_similarity(sentence_one , sentence_two):
             else:
                 r2[j] = 0
         j+=1
+    if (np.linalg.norm(r1 + r2) == 0):
+        return 0;
     return 1.0 - (np.linalg.norm(r1 - r2) / np.linalg.norm(r1 + r2))
 def synset(sentence_one,sentence_two):
 

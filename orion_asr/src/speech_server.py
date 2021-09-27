@@ -63,10 +63,10 @@ class SpeechServer(object):
 
         rospy.logwarn("SpeakAndListen action started:")
         rospy.logwarn("Question: " + question)
-        rospy.logwarn("Candidates:")
-        rospy.logwarn(candidates)
-        rospy.logwarn("Params:")
-        rospy.logwarn(params)
+        # rospy.logwarn("Candidates:")
+        # rospy.logwarn(candidates)
+        # rospy.logwarn("Params:")
+        # rospy.logwarn(params)
 
         if question:
             self.speak(question)
