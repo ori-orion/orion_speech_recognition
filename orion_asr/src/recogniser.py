@@ -96,6 +96,11 @@ class ASR(object):
             self.transcribe(filename)
         except sr.WaitTimeoutError as e:
             pass
+
+        print("\t", self.transcription, " len(self.candidates_parsed)=", len(self.candidates_parsed));
+        if (len(self.candidates_parsed) == 0):
+            return self.transcription, "", 1, self.transcription, True
+
         try:
             if classification_algorithm=='synset':
                 sentence, confidence, transcription = self.classify_synset(self.candidates_parsed, self.transcription)
