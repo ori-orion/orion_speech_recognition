@@ -86,6 +86,12 @@ You can test the action server by sending a goal to it, using the axclient GUI t
 ### Make the robot speak
 `talk_request_action` is an action that is a part of the HSR by default that allows the robot to speak.
  
+ **ROS Noetic**
+```
+rosrun actionlib_tools axclient.py /talk_request_action tmc_msgs/TalkRequestAction
+```
+ 
+** ROS Melodic**
 ```
 rosrun actionlib axclient.py /talk_request_action tmc_msgs/TalkRequestAction
 ```
@@ -109,7 +115,7 @@ asr.record(gen, rec.config, 'Levenshtein')
 ### SpeakAndListen Action
 
 ```
-rosrun actionlib axclient.py /speak_and_listen orion_actions/SpeakAndListenAction
+rosrun actionlib_tools axclient.py /speak_and_listen orion_actions/SpeakAndListenAction
 ```
 
 Example input 1:
@@ -147,7 +153,7 @@ succeeded: True
 ### HotwordListen Action
 
 ```
-rosrun actionlib axclient.py /hotword_listen orion_actions/HotwordListenAction
+rosrun actionlib_tools axclient.py /hotword_listen orion_actions/HotwordListenAction
 ```
 
 Example input 1:
