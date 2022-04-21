@@ -16,6 +16,8 @@ from record import Recorder
 # NOTE: No longer able to use Snowboy, discontinued
 #from hotword import HotwordDetector
 
+# import ebbhrd_msgs.msg
+
 
 class SpeechServer(object):
     # create messages that are used to publish feedback/result
@@ -41,6 +43,8 @@ class SpeechServer(object):
 
         self._snl_as = SimpleActionServer("speak_and_listen", SpeakAndListenAction, execute_cb=self.speak_and_listen_cb, auto_start=False)
         self._snl_as.start()
+
+
 
         #self._hotword_as = SimpleActionServer("hotword_listen", HotwordListenAction, execute_cb=self.hotword_listen_cb, auto_start=False)
         #self._hotword_as.start()
@@ -101,11 +105,12 @@ class SpeechServer(object):
                     self._snl_as.publish_feedback(self._snl_feedback)
 
         if succeeded:
-            self.speak("OK. You said " + answer)
+            self.speak("OK. You said " + answer[0])
+            pass;
         else:
             self.speak("Sorry, I didn't get it.")
 
-        self._snl_result.answer, self._snl_result.param, self._snl_result.confidence, self._snl_result.transcription, self._snl_result.succeeded = answer, param, confidence, transcription, succeeded
+        self._snl_result.answer, self._snl_result.param, self._snl_result.confidence, self._snl_result.transcription, self._snl_result.succeeded = answer[0], param, confidence, transcription, succeeded
         self._snl_as.set_succeeded(self._snl_result)
 
     def hotword_listen_cb(self, goal):

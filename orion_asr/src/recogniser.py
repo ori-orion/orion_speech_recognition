@@ -99,7 +99,7 @@ class ASR(object):
 
         print("\t", self.transcription, " len(self.candidates_parsed)=", len(self.candidates_parsed));
         if (len(self.candidates_parsed) == 0):
-            return self.transcription, "", 1, self.transcription, True
+            return self.transcription, "", 1, self.transcription[0], True
 
         try:
             if classification_algorithm=='synset':

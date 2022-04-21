@@ -51,8 +51,8 @@ class Recorder(object):
                 pxx, freq, time = self.spectrogram(window)
                 rms_energy = self.rmsenergy(pxx).mean()
                 max_energy = max(max_energy, rms_energy)
-                print(rms_energy.mean())
-                if rms_energy < max_energy / 4 or not self.is_recording:
+                # print(rms_energy.mean())
+                if rms_energy < max_energy / 3 or not self.is_recording:
                     break
 
             self.data.append((frames, max_energy))
