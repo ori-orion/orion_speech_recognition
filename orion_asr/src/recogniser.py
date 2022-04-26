@@ -99,6 +99,9 @@ class ASR(object):
 
         print("\t", self.transcription, " len(self.candidates_parsed)=", len(self.candidates_parsed));
         if (len(self.candidates_parsed) == 0):
+            if len(self.transcription) > 1:#
+                if len(self.transcription[1]) > len(self.transcription[0]):
+                    self.transcription[0] = self.transcription[1];
             return self.transcription, "", 1, self.transcription[0], True
 
         try:

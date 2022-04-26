@@ -105,7 +105,7 @@ class SpeechServer(object):
                     self._snl_as.publish_feedback(self._snl_feedback)
 
         if succeeded:
-            self.speak("OK. You said " + answer[0])
+            #self.speak("OK. You said " + answer[0])
             pass;
         else:
             self.speak("Sorry, I didn't get it.")
