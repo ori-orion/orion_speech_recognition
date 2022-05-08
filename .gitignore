@@ -113,3 +113,4 @@ orion_asr/src/tmp/*
 .idea
 
 sandbox
+**/vosk_model

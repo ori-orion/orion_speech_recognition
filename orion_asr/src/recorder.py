@@ -7,6 +7,7 @@ import os
 import queue
 import sounddevice as sd
 import sys
+import os
 import pyaudio
 
 from speech_recognition import AudioData, Recognizer
@@ -15,7 +16,7 @@ import speech_recognition as sr
 vosk.SetLogLevel(0)
 
 
-DEFAULT_MODEL_PATH = "vosk_model"
+DEFAULT_MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vosk_model")
 
 
 class Recorder:
