@@ -1,30 +1,22 @@
 #!/usr/bin/env python3
-import json
 
-import vosk  # has to be imported at the top
+import vosk     # has to be imported at the top
 import argparse
 import os
 import queue
 import sounddevice as sd
 import sys
-import pyaudio
-
-from speech_recognition import AudioData, Recognizer
-import speech_recognition as sr
 
 vosk.SetLogLevel(0)
-
-
-DEFAULT_MODEL_PATH = "vosk_model"
 
 
 class Recorder:
     def __init__(self, model=None, filename=None, device=None, samplerate=None, blocksize=8000, **kwargs):
         if model is None:
-            model = DEFAULT_MODEL_PATH
+            model = "model"
         if not os.path.exists(model):
-            raise Exception(f"""Please download a model for your language from https://alphacephei.com/vosk/models
-            and unpack as '{DEFAULT_MODEL_PATH}' in the current folder.""")
+            raise Exception("""Please download a model for your language from https://alphacephei.com/vosk/models
+            and unpack as 'model' in the current folder.""")
         if samplerate is None:
             device_info = sd.query_devices(device, 'input')
             # soundfile expects an int, sounddevice provides a float:
@@ -34,51 +26,22 @@ class Recorder:
         self.blocksize = blocksize
 
         self.q = queue.Queue()
-
-        self.sample_width = pyaudio.get_sample_size(pyaudio.paInt16)  # size of each sample
-
         self.model = vosk.Model(model)
-        self.r = Recognizer()
         self.dump_fn = open(filename, "wb") if filename else None
-        self.stream = sd.RawInputStream(samplerate=self.samplerate, blocksize=self.blocksize, device=self.device,
-                                        dtype='int16', channels=1, callback=self._callback)
-        self.stream.start()
-
         self.run()
 
-    def __del__(self):
-        self.stream.stop()
-        self.stream.close()
-
     def run(self):
-        rec = vosk.KaldiRecognizer(self.model, self.samplerate)
-        frames = []
-        while True:
-            data = self.q.get()
-            frames.append(data)
-            if rec.AcceptWaveform(data):
-                frame_data = b"".join(frames)
-                audio = AudioData(frame_data, self.samplerate, self.sample_width)
-                frames = []
-                print(f"Vosk says: {json.loads(rec.Result())['text']}")
-                try:
-                    res = self.r.recognize_google(audio)
-                    print(f"Google says: {res}")
-                    with open("results_google.txt", "a") as f:
-                        f.write(res + "\n")
-
-                    # res = self.r.recognize_sphinx(audio)
-                    # print(f"Sphinx says: {res}")
-                    with open("audio.wav", "wb") as f:
-                        f.write(audio.get_wav_data())
-                except sr.UnknownValueError as e:
-                    print("No speech detected")
-                    pass
-            else:
-                # print(rec.PartialResult())
-                pass
-            if self.dump_fn is not None:
-                self.dump_fn.write(data)
+        with sd.RawInputStream(samplerate=self.samplerate, blocksize=self.blocksize, device=self.device, dtype='int16',
+                               channels=1, callback=self._callback):
+            rec = vosk.KaldiRecognizer(self.model, self.samplerate)
+            while True:
+                data = self.q.get()
+                if rec.AcceptWaveform(data):
+                    print(rec.Result())
+                else:
+                    print(rec.PartialResult())
+                if self.dump_fn is not None:
+                    self.dump_fn.write(data)
 
     def _callback(self, indata, frames, time, status):
         """This is called (from a separate thread) for each audio block."""
@@ -114,7 +77,6 @@ def get_vosk_args():
     parser.add_argument(
         '-m', '--model', type=str, metavar='MODEL_PATH',
         help='Path to the model')
-
     parser.add_argument(
         '-d', '--device', type=int_or_str,
         help='input device (numeric ID or substring)')
