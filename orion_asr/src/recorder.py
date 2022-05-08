@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import threading
 import time
 
 import vosk  # has to be imported at the top
@@ -19,6 +20,12 @@ vosk.SetLogLevel(0)
 
 DEFAULT_MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vosk_model")
 AUDIO_SAVE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp")
+
+
+def save_to_wave(audio: AudioData):
+    with open(os.path.join(AUDIO_SAVE_PATH, f"{int(time.time())}.wav"), "wb") as f:
+        f.write(audio.get_wav_data())
+    sys.exit(0)
 
 
 class Recorder:
@@ -74,8 +81,8 @@ class Recorder:
                         f.write(res + "\n")
                     # res = self.r.recognize_sphinx(audio)
                     # print(f"Sphinx says: {res}")
-                    with open(os.path.join(AUDIO_SAVE_PATH, f"{int(time.time())}.wav"), "wb") as f:
-                        f.write(audio.get_wav_data())
+                    th = threading.Thread(target=save_to_wave, args=(audio,))
+                    th.start()
                 except sr.UnknownValueError as e:
                     print("No speech detected")
                     pass
