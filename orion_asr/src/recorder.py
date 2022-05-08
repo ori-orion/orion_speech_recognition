@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import time
 
 import vosk  # has to be imported at the top
 import argparse
@@ -17,6 +18,7 @@ vosk.SetLogLevel(0)
 
 
 DEFAULT_MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vosk_model")
+AUDIO_SAVE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp")
 
 
 class Recorder:
@@ -45,6 +47,9 @@ class Recorder:
                                         dtype='int16', channels=1, callback=self._callback)
         self.stream.start()
 
+        if not os.path.exists(AUDIO_SAVE_PATH):
+            os.makedirs(AUDIO_SAVE_PATH)
+
         self.run()
 
     def __del__(self):
@@ -67,10 +72,9 @@ class Recorder:
                     print(f"Google says: {res}")
                     with open("results_google.txt", "a") as f:
                         f.write(res + "\n")
-
                     # res = self.r.recognize_sphinx(audio)
                     # print(f"Sphinx says: {res}")
-                    with open("audio.wav", "wb") as f:
+                    with open(os.path.join(AUDIO_SAVE_PATH, f"{int(time.time())}.wav"), "wb") as f:
                         f.write(audio.get_wav_data())
                 except sr.UnknownValueError as e:
                     print("No speech detected")
