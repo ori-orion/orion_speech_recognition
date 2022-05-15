@@ -152,6 +152,8 @@ def sent_sim(sent_set_one, sent_set_two , joint_word_set):
     sem_vec_two = gen_sem_vec(sent_set_two,joint_word_set)
 
     #multiply the two vectors..
+    if (np.linalg.norm(sem_vec_one) * np.linalg.norm(sem_vec_two)) == 0:
+        return 0;
     return np.dot(sem_vec_one,sem_vec_two.T) / (np.linalg.norm(sem_vec_one) * np.linalg.norm(sem_vec_two))
 
 def word_order_similarity(sentence_one , sentence_two):
@@ -192,6 +194,8 @@ def word_order_similarity(sentence_one , sentence_two):
             else:
                 r2[j] = 0
         j+=1
+    if (np.linalg.norm(r1 + r2) == 0):
+        return 0;
     return 1.0 - (np.linalg.norm(r1 - r2) / np.linalg.norm(r1 + r2))
 def synset(sentence_one,sentence_two):
 
