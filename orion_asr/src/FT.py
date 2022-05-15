@@ -26,11 +26,17 @@ def getVerbs():
     verbs = ['bring', 'find', 'search', 'go', 'deliver', 'tidy', 'learn', 'take', 'is']
     return verbs
 
-def compare(candidates, transcriptions):
-    vectors_path = 'data/fasttext_vectors.p' # Change this to the relative path on your machine
 
-    with open(vectors_path, 'rb') as f:
-        vectors = pickle.load(f)
+def compare(candidates, transcriptions):
+    vectors_path = '../data/fasttext_vectors.p' # Change this to the relative path on your machine
+
+    try:
+        with open(vectors_path, 'rb') as f:
+            vectors = pickle.load(f)
+            print("I loaded")
+    except:
+        print("Wrong vectors path")
+
         
     #Get a list of verbs
     verbs = getVerbs()
