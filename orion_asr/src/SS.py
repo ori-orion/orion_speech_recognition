@@ -1,5 +1,4 @@
 
-
 from nltk import word_tokenize
 from nltk import sent_tokenize
 from nltk.corpus import wordnet as wn

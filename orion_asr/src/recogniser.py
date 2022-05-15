@@ -6,10 +6,12 @@ import speech_recognition as sr
 import Levenshtein, threading, time
 import numpy as np
 #import rospy
-from record import Recorder
+#from record import Recorder
 import scipy
 from logmmse import logmmse
 import SS
+import FT
+import time
 
 
 
@@ -79,7 +81,7 @@ class ASR(object):
                 self.audios.append(audio)
                 self.transcription[0] += " " + str(text)
 
-    def record(self, audio_source, config,classification_algorithm='synset'):
+    def record(self, audio_source, config,classification_algorithm='fasttext'):
 
         try:
             # audio = self.rec.record(audio_source, duration=5.0)
@@ -100,6 +102,8 @@ class ASR(object):
                 sentence, confidence, transcription = self.classify_synset(self.candidates_parsed, self.transcription)
             elif classification_algorithm=='levenshtein':
                 sentence, confidence, transcription = self.classify_Levenshtein(self.candidates_parsed, self.transcription)
+            elif classification_algorithm=='fasttext':
+                sentence, confidence, transcription = self.classify_fasttext(self.candidates_parsed, self.transcription)
             else:
                 raise Exception('Please provide a valid classification algorithm, synset or levenstein')
 
@@ -110,6 +114,7 @@ class ASR(object):
                 print("Confidence [0,1]: " + str(confidence))
             else:
                 raise Exception("No valid task was found")
+            print()
             param = self.candidates_params[self.candidates_parsed.index(sentence)] if sentence else ""
             return sentence, param, confidence, transcription, confidence > self.thresh
 
@@ -117,6 +122,29 @@ class ASR(object):
             print("please try again")
 
             #asr.record(audio_source, config)
+
+    def classifyTask(self, transcription, classification_algorithm='fasttext'):
+        try:
+            if(classification_algorithm == 'fasttext'):
+                self.transcription = transcription
+                print(self.transcription)
+                sentence, confidence, transcription = self.classify_fasttext(self.candidates_parsed, self.transcription)
+            if confidence < self.thresh:
+                print("Similarity Measure: " + classification_algorithm)
+                print("Transcription: " +  transcription)
+                print("Most relevant task: " + sentence)
+                print("Confidence [0,1]: " + str(confidence))
+            else:
+                print("No valid task was found")
+                raise Exception("No valid task was found")
+            
+            param = self.candidates_params[self.candidates_parsed.index(sentence)] if sentence else ""
+            return sentence, param, confidence, transcription, confidence > self.thresh
+
+        except:
+            print("please try classification again")
+
+
 
     @staticmethod
     def classify_Levenshtein(candidates, transcriptions):
@@ -146,6 +174,13 @@ class ASR(object):
                     max_similarity = sim
         return candidates[c_max], max_similarity, transcriptions[t_max]
 
+    @staticmethod
+    def classify_fasttext(candidates, transcriptions):
+        print("I made it to staticmethod")
+        min_similarity, c_max, t_max = FT.compare(candidates, transcriptions)
+        print(candidates[c_max], min_similarity, transcriptions[t_max])
+        return candidates[c_max], min_similarity, transcriptions[t_max]
+
 
 
 if __name__ == "__main__":
@@ -159,13 +194,20 @@ if __name__ == "__main__":
 
     asr.set_candidates(candidates, params)
 
+    transcription = ["bring me a apple", "where is bathroom"]
+
+    start = time.time()
+    asr.classifyTask(transcription)
+    end = time.time()
+    print(end-start)
+
     # print(asr.classify(candidates, transcription))
     # with sr.Microphone() as source:
 
-    with Recorder() as rec:
-        print("Started recording...")
-        gen = rec.frames_generator()
+    #with Recorder() as rec:
+    #   print("Started recording...")
+    #    gen = rec.frames_generator()
 
 
-        asr.record(gen, rec.config)
+    #    asr.record(gen, rec.config)
         #print(asr.record(gen, rec.config))
