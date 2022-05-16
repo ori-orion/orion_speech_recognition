@@ -106,11 +106,11 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-orion_asr/src/wavenet/asset/*
-orion_asr/src/tmp/*
-*/__pycache__/
-orion_asr/src/tmp/*
 .idea
 
+orion_asr/tmp/*
+orion_asr/data/vosk_model
+
+vosk-model-small-en-us-0.15
+
 sandbox
-**/vosk_model

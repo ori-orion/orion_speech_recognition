@@ -8,7 +8,6 @@ from orion_actions.msg import SpeakAndListenAction, SpeakAndListenGoal, SpeakAnd
 
 from tmc_msgs.msg import TalkRequestAction, TalkRequestGoal, Voice
 import speech_recognition as sr
-# from wavenet.recognize import WaveNet
 from recogniser import ASR
 import time, os
 import numpy as np
@@ -34,8 +33,6 @@ class SpeechServer(object):
         rospy.loginfo("Waiting for talk_request_action...")
         self.output_text.wait_for_server(timeout=rospy.Duration(5))
         rospy.loginfo("Speech action started")
-
-        # self.wavenet = WaveNet()
 
         rospy.logwarn("SpeechServer started:")
 
@@ -71,7 +68,7 @@ class SpeechServer(object):
         if question:
             self.speak(question)
 
-        asr = ASR(self.recognizer, "self.wavenet")
+        asr = ASR(self.recognizer)
         asr.set_candidates(candidates, params)
 
         # with sr.Microphone() as source:

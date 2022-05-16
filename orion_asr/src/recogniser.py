@@ -12,11 +12,10 @@ from nlp import fasttext, synset
 import time
 
 
-class ASR(object):
+class ASR:
 
-    def __init__(self, recognizer, wavenet, thresh=0.6):
+    def __init__(self, recognizer, thresh=0.6):
         self.rec = recognizer
-        self.wavenet = wavenet
         self.google_available = True
         self.audios = []
         self.transcription = [""]
@@ -54,25 +53,13 @@ class ASR(object):
 
                 print("Sphinx ASR + WaveNet...")
 
-                def transcribe_sphinx(aud):
-                    try:
-                        sphinx_text = self.rec.recognize_sphinx(aud)
-                        self.transcription[1] += " " + str(sphinx_text)
-                    except sr.UnknownValueError:
-                        rospy.logerr("Sphinx could not understand audio")
-                    except Exception as e:
-                        rospy.logerr(e)
-
-                th = threading.Thread(target=transcribe_sphinx, args=(audio,))
-                th.start()
-
-                # if tmp_filename:
-                #     try:
-                #         text = self.wavenet.transcribe(tmp_filename)
-                #     except Exception as e:
-                #         rospy.logerr(e)
-
-                th.join()
+                try:
+                    sphinx_text = self.rec.recognize_sphinx(aud)
+                    self.transcription[1] += " " + str(sphinx_text)
+                except sr.UnknownValueError:
+                    rospy.logerr("Sphinx could not understand audio")
+                except Exception as e:
+                    rospy.logerr(e)
 
             if text:
                 self.audios.append(audio)
@@ -186,7 +173,7 @@ if __name__ == "__main__":
     # wavenet = WaveNet()
 
     print("Instantiating ASR...")
-    asr = ASR(recognizer, "wavenet")
+    asr = ASR(recognizer)
     candidates = ['search for objects', 'tidy up', 'bring me something', 'learn new object', 'go to start',
                   "bring me a <param>"]
     params = ["banana", "tomato", "peach", "toothbrush", "apple"]
