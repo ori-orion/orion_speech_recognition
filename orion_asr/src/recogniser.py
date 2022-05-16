@@ -1,18 +1,18 @@
 import os
 import sys
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import speech_recognition as sr
 # from wavenet.recognize import WaveNet
 import Levenshtein, threading, time
 import numpy as np
-#import rospy
+# import rospy
 from record import Recorder
 import scipy
 from logmmse import logmmse
 import SS
 import FT
 import time
-
 
 
 class ASR(object):
@@ -81,14 +81,14 @@ class ASR(object):
                 self.audios.append(audio)
                 self.transcription[0] += " " + str(text)
 
-    def record(self, audio_source, config,classification_algorithm='fasttext'):
+    def record(self, audio_source, config, classification_algorithm='fasttext'):
 
         try:
             # audio = self.rec.record(audio_source, duration=5.0)
             data, max_energy = next(audio_source)
             npdata = np.fromstring(data, dtype=np.int16).astype(np.float64)
             absmax = np.abs(npdata).max()
-            npdata = (npdata * 32000/absmax * 10/np.log(max_energy)).astype(np.int16)
+            npdata = (npdata * 32000 / absmax * 10 / np.log(max_energy)).astype(np.int16)
             print("Filtering and saving wav...")
             filename = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                     "tmp/%s.wav" % int(time.time()))
@@ -98,18 +98,19 @@ class ASR(object):
         except sr.WaitTimeoutError as e:
             pass
         try:
-            if classification_algorithm=='synset':
+            if classification_algorithm == 'synset':
                 sentence, confidence, transcription = self.classify_synset(self.candidates_parsed, self.transcription)
-            elif classification_algorithm=='levenshtein':
-                sentence, confidence, transcription = self.classify_Levenshtein(self.candidates_parsed, self.transcription)
-            elif classification_algorithm=='fasttext':
+            elif classification_algorithm == 'levenshtein':
+                sentence, confidence, transcription = self.classify_Levenshtein(self.candidates_parsed,
+                                                                                self.transcription)
+            elif classification_algorithm == 'fasttext':
                 sentence, confidence, transcription = self.classify_fasttext(self.candidates_parsed, self.transcription)
             else:
                 raise Exception('Please provide a valid classification algorithm, synset or levenstein')
 
             if confidence > self.thresh:
                 print("Similarity Measure: " + classification_algorithm)
-                print("Transcription: " +  self.transcription[0])
+                print("Transcription: " + self.transcription[0])
                 print("Most relevant task: " + sentence)
                 print("Confidence [0,1]: " + str(confidence))
             else:
@@ -121,17 +122,17 @@ class ASR(object):
         except:
             print("please try again")
 
-            #asr.record(audio_source, config)
+            # asr.record(audio_source, config)
 
     def classifyTask(self, transcription, classification_algorithm='fasttext'):
         try:
-            if(classification_algorithm == 'fasttext'):
+            if (classification_algorithm == 'fasttext'):
                 self.transcription = transcription
                 print(self.transcription)
                 sentence, confidence, transcription = self.classify_fasttext(self.candidates_parsed, self.transcription)
             if confidence < self.thresh:
                 print("Similarity Measure: " + classification_algorithm)
-                print("Transcription: " +  transcription)
+                print("Transcription: " + transcription)
                 print("Most relevant task: " + sentence)
                 print("Confidence [0,1]: " + str(confidence))
             else:
@@ -144,8 +145,6 @@ class ASR(object):
         except:
             print("please try classification again")
 
-
-
     @staticmethod
     def classify_Levenshtein(candidates, transcriptions):
         scores = np.zeros((len(candidates), len(transcriptions)))
@@ -154,7 +153,7 @@ class ASR(object):
             m = int(len(candidate))
             for j, transcription in enumerate(transcriptions):
                 for i in range(max(len(transcription) - m + 1, 1)):
-                    subtext = transcription[i:i+m]
+                    subtext = transcription[i:i + m]
                     score = max(Levenshtein.ratio(candidate, subtext), score)
                 scores[i_cand, j] = score
         i_max = np.argmax(scores)
@@ -169,7 +168,7 @@ class ASR(object):
             for j, transcription in enumerate(transcriptions):
                 try:
                     sim = float(SS.synset(candidate, transcription))
-                    if sim>max_similarity:
+                    if sim > max_similarity:
                         c_max = i
                         t_max = j
                         max_similarity = sim
@@ -185,14 +184,14 @@ class ASR(object):
         return candidates[c_max], min_similarity, transcriptions[t_max]
 
 
-
 if __name__ == "__main__":
     recognizer = sr.Recognizer()
     # wavenet = WaveNet()
 
     print("Instantiating ASR...")
     asr = ASR(recognizer, "wavenet")
-    candidates = ['search for objects', 'tidy up', 'bring me something', 'learn new object', 'go to start', "bring me a <param>"]
+    candidates = ['search for objects', 'tidy up', 'bring me something', 'learn new object', 'go to start',
+                  "bring me a <param>"]
     params = ["banana", "tomato", "peach", "toothbrush", "apple"]
 
     asr.set_candidates(candidates, params)
@@ -202,7 +201,7 @@ if __name__ == "__main__":
     start = time.time()
     asr.classifyTask(transcription)
     end = time.time()
-    print(end-start)
+    print(end - start)
 
     # print(asr.classify(candidates, transcription))
     # with sr.Microphone() as source:
@@ -211,6 +210,5 @@ if __name__ == "__main__":
         print("Started recording...")
         gen = rec.frames_generator()
 
-
         asr.record(gen, rec.config)
-        #print(asr.record(gen, rec.config))
+        # print(asr.record(gen, rec.config))
