@@ -1,17 +1,14 @@
 import os
-import sys
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import speech_recognition as sr
 # from wavenet.recognize import WaveNet
-import Levenshtein, threading, time
+import Levenshtein, threading
 import numpy as np
 # import rospy
 from record import Recorder
-import scipy
 from logmmse import logmmse
-import SS
-import FT
+from nlp import fasttext, synset
 import time
 
 

@@ -1,8 +1,7 @@
-
-
 import nltk
 from nltk import word_tokenize, pos_tag
 from nltk.corpus import wordnet as wn
+
 
 def penn_to_wn(tag):
     """ Convert between a Penn Treebank tag to a simplified Wordnet tag """
@@ -20,6 +19,7 @@ def penn_to_wn(tag):
 
     return None
 
+
 def tagged_to_synset(word, tag):
     wn_tag = penn_to_wn(tag)
 
@@ -31,6 +31,7 @@ def tagged_to_synset(word, tag):
         return wn.synsets(word, wn_tag)[0]
     except:
         return None
+
 
 def sentence_similarity(sentence1, sentence2):
     """ compute the sentence similarity using Wordnet """
@@ -67,6 +68,7 @@ def sentence_similarity(sentence1, sentence2):
     score /= count
     return score
 
+
 sentences = [
     "fetch me animal."
 ]
@@ -76,7 +78,7 @@ focus_sentence = "bring me animal."
 for sentence in sentences:
     print("Similarity(\"%s\", \"%s\") = %s" % (focus_sentence, sentence, sentence_similarity(focus_sentence, sentence)))
     print("Similarity(\"%s\", \"%s\") = %s" % (sentence, focus_sentence, sentence_similarity(sentence, focus_sentence)))
-    print
+    print()
 
 # Similarity("Cats are beautiful animals.", "Dogs are awesome.") = 0.511111111111
 # Similarity("Dogs are awesome.", "Cats are beautiful animals.") = 0.666666666667

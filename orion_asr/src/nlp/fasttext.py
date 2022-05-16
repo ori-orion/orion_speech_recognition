@@ -9,10 +9,10 @@
 import pickle
 import numpy as np
 from scipy.spatial.distance import cosine
-#from sklearn.feature_extraction import stop_words
+# from sklearn.feature_extraction import stop_words
 import nltk
 from nltk.tokenize import word_tokenize
-#nltk.download('punkt')
+# nltk.download('punkt')
 from spacy.lang.en.stop_words import STOP_WORDS
 import string
 
@@ -22,13 +22,14 @@ def clean(sentence):
     stopwords = STOP_WORDS
     return [w.lower() for w in tokens if w not in string.punctuation and w not in stopwords]
 
+
 def getVerbs():
     verbs = ['bring', 'find', 'search', 'go', 'deliver', 'tidy', 'learn', 'take', 'is']
     return verbs
 
 
 def compare(candidates, transcriptions):
-    vectors_path = '../data/fasttext_vectors.p' # Change this to the relative path on your machine
+    vectors_path = '../../data/fasttext_vectors.p'  # Change this to the relative path on your machine
 
     try:
         with open(vectors_path, 'rb') as f:
@@ -37,8 +38,7 @@ def compare(candidates, transcriptions):
     except:
         print("Wrong vectors path")
 
-        
-    #Get a list of verbs
+    # Get a list of verbs
     verbs = getVerbs()
     weight = 1.2
 
@@ -46,44 +46,41 @@ def compare(candidates, transcriptions):
 
     vec_sum_cand = np.zeros((len(candidates), len(vectors['find'])))
     vec_sum_trans = np.zeros((len(transcriptions), len(vectors['find'])))
-    
+
     for i in range(len(candidates)):
         cand = clean(candidates[i])
         for word in cand:
             try:
-                if(word in verbs):
+                if (word in verbs):
                     vec_sum_cand[i] = np.add(vec_sum_cand[i], np.multiply(vectors[word], weight))
                 else:
                     vec_sum_cand[i] = np.add(vec_sum_cand[i], vectors[word])
             except:
                 print('No vector of ', word)
-        vec_sum_cand[i] = vec_sum_cand[i]/len(cand)
+        vec_sum_cand[i] = vec_sum_cand[i] / len(cand)
 
     for i in range(len(transcriptions)):
         trans = clean(transcriptions[i])
         for word in trans:
             try:
-                if(word in verbs):
+                if (word in verbs):
                     vec_sum_trans[i] = np.add(vec_sum_trans[i], np.multiply(vectors[word], weight))
                 else:
                     vec_sum_trans[i] = np.add(vec_sum_trans[i], vectors[word])
             except:
                 print('No vector of ', word)
-        vec_sum_trans[i] = vec_sum_trans[i]/len(trans)
+        vec_sum_trans[i] = vec_sum_trans[i] / len(trans)
 
     min_similarity = 1
     for i in range(len(candidates)):
         for j in range(len(transcriptions)):
             sim = cosine(vec_sum_cand[i], vec_sum_trans[j])
-            if(min_similarity>sim):
+            if (min_similarity > sim):
                 c_min = i
                 t_min = j
                 min_similarity = float(sim)
-    
+
     return min_similarity, c_min, t_min
-    
-
-
 
 
 def compareIndividual(candidate, transcription, vectors, verbs, weight):
@@ -93,35 +90,34 @@ def compareIndividual(candidate, transcription, vectors, verbs, weight):
 
     cand = clean(candidate)
     trans = clean(transcription)
-    
+
     vec_sum = np.zeros(len(vectors['find']))
     for word in cand:
         try:
-            if(word in verbs):
+            if (word in verbs):
                 vec_sum = np.add(vec_sum, np.multiply(vectors[word], weight))
             else:
                 vec_sum = np.add(vec_sum, vectors[word])
         except:
             print('No vector of ', word)
-    cand_avg = vec_sum/len(cand)
+    cand_avg = vec_sum / len(cand)
 
     vec_sum = np.zeros(len(vectors['find']))
     for word in trans:
         try:
-            if(word in verbs):
+            if (word in verbs):
                 vec_sum = np.add(vec_sum, np.multiply(vectors[word], weight))
             else:
                 vec_sum = np.add(vec_sum, vectors[word])
         except:
             print('No vector of ', word)
-    trans_avg = vec_sum/len(cand)
+    trans_avg = vec_sum / len(cand)
 
     return cosine(cand_avg, trans_avg)
 
 
 if __name__ == "__main__":
-
-    candidates = ['search for objects', 'tidy up', 'bring me something', 'learn new object', 'go to start', 'bring me a piece of fruit']
+    candidates = ['search for objects', 'tidy up', 'bring me something', 'learn new object', 'go to start',
+                  'bring me a piece of fruit']
 
     compare(candidates)
-
