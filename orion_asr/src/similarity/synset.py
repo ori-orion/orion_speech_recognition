@@ -35,13 +35,12 @@ def proper_synset(word_one, word_two):
                     pair = synset_one, synset_two
     else:
         # need to see as for some word there will be no wordset.
-        # shuld make it as none
+        # should make it as none
         pair = (None, None)
     return pair
 
 
 def length_between_words(synset_one, synset_two):
-    length = 100000000
     if synset_one is None or synset_two is None:
         return 0
     elif (synset_one == synset_two):
@@ -60,7 +59,6 @@ def length_between_words(synset_one, synset_two):
 
 
 def depth_common_subsumer(synset_one, synset_two):
-    height = 100000000
     if synset_one is None or synset_two is None:
         return 0
     elif synset_one == synset_two:
@@ -79,7 +77,6 @@ def depth_common_subsumer(synset_one, synset_two):
                 val = max(val)
                 if val > height: height = val
 
-    # print(height) #works
     return (math.exp(CONST_BETA * height) - math.exp(-CONST_BETA * height)) / (
                 math.exp(CONST_BETA * height) + math.exp(-CONST_BETA * height))
 
@@ -164,7 +161,7 @@ def sent_sim(sent_set_one, sent_set_two, joint_word_set):
 
     # multiply the two vectors..
     if (np.linalg.norm(sem_vec_one) * np.linalg.norm(sem_vec_two)) == 0:
-        return 0;
+        return 0
     return np.dot(sem_vec_one, sem_vec_two.T) / (np.linalg.norm(sem_vec_one) * np.linalg.norm(sem_vec_two))
 
 
@@ -207,7 +204,7 @@ def word_order_similarity(sentence_one, sentence_two):
                 r2[j] = 0
         j += 1
     if (np.linalg.norm(r1 + r2) == 0):
-        return 0;
+        return 0
     return 1.0 - (np.linalg.norm(r1 - r2) / np.linalg.norm(r1 + r2))
 
 
@@ -220,10 +217,6 @@ def synset(sentence_one, sentence_two):
                 (1.0 - CONST_DELTA) * word_order_similarity(sentence_one, sentence_two))
     return sentence_similarity
 
-
-# sentence_one = "I play hockey"
-# sentence_two = "who are you?"
-# print(main(sentence_one,sentence_two))\
 
 def file_sem(f):
     contents = open(f).read().strip()
