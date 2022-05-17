@@ -1,0 +1,2 @@
+string[] detectors
+string[] transcriptions

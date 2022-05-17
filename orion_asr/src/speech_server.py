@@ -5,6 +5,7 @@ from actionlib import SimpleActionServer, SimpleActionClient
 
 from orion_actions.msg import HotwordListenAction, HotwordListenGoal, HotwordListenResult
 from orion_actions.msg import SpeakAndListenAction, SpeakAndListenGoal, SpeakAndListenFeedback, SpeakAndListenResult
+from std_srvs.srv import Empty
 
 from tmc_msgs.msg import TalkRequestAction, TalkRequestGoal, Voice
 import speech_recognition as sr
@@ -28,6 +29,9 @@ class SpeechServer(object):
 
         self.recorder = Recorder(save_audio=True)
 
+        self.speech_start = rospy.Service('recording_start', Empty, self.start_recording)
+        self.speech_stop = rospy.Service('recording_stop', Empty, self.stop_recording)
+
         self.output_text = SimpleActionClient('talk_request_action', TalkRequestAction)
         rospy.loginfo("Waiting for talk_request_action...")
         self.output_text.wait_for_server(timeout=rospy.Duration(5))
@@ -38,8 +42,16 @@ class SpeechServer(object):
         self._snl_as = SimpleActionServer("speak_and_listen", SpeakAndListenAction, execute_cb=self.speak_and_listen_cb, auto_start=False)
         self._snl_as.start()
 
-        #self._hotword_as = SimpleActionServer("hotword_listen", HotwordListenAction, execute_cb=self.hotword_listen_cb, auto_start=False)
-        #self._hotword_as.start()
+        # self._hotword_as = SimpleActionServer("hotword_listen", HotwordListenAction, execute_cb=self.hotword_listen_cb, auto_start=False)
+        # self._hotword_as.start()
+
+    def start_recording(self):
+        rospy.logwarn("Starting speech recording")
+        self.recorder.start()
+
+    def stop_recording(self):
+        rospy.logwarn("Stopping speech recording")
+        self.recorder.stop()
 
     def speak(self, text):
 
