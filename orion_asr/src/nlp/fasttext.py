@@ -5,16 +5,20 @@
 # Embeddings for sentences are formed as averages of the embeddings of words which are forming them
 # More weight is put on verbs in order to classify tasks. Nouns then determine an object of the task
 # e.g. Bring me a banana vs Bring me something vs Bring me fruit
-
 import pickle
+from typing import List
+
 import numpy as np
 from scipy.spatial.distance import cosine
-# from sklearn.feature_extraction import stop_words
 import nltk
 from nltk.tokenize import word_tokenize
 # nltk.download('punkt')
 from spacy.lang.en.stop_words import STOP_WORDS
 import string
+import os
+
+
+DEFAULT_VECTORS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../data/fasttext_vectors.p')
 
 
 def clean(sentence):
@@ -23,101 +27,66 @@ def clean(sentence):
     return [w.lower() for w in tokens if w not in string.punctuation and w not in stopwords]
 
 
-def getVerbs():
-    verbs = ['bring', 'find', 'search', 'go', 'deliver', 'tidy', 'learn', 'take', 'is']
-    return verbs
+class TextVector:
+    def __init__(self, vectors_path=DEFAULT_VECTORS_PATH, verb_weight=1.2):
+        try:
+            with open(vectors_path, 'rb') as f:
+                self.vectors = pickle.load(f)
+        except:
+            raise Exception(f"Wrong vectors path {vectors_path}")
+
+        self.verbs = ['bring', 'find', 'search', 'go', 'deliver', 'tidy', 'learn', 'take', 'is']
+        self.verb_weight = verb_weight
+
+    def sent_to_vec(self, sentence):
+        words = clean(sentence)
+        vecs = []
+        for word in words:
+            try:
+                vec = np.array(self.vectors[word])
+                if word in self.verbs:
+                    vec = vec * self.verb_weight
+                vecs.append(vec)
+            except:
+                print('No vector of ', word)
+        return np.mean(vecs, axis=0)
+
+    def sents_to_vec(self, sentences: List[str]):
+        return np.stack([self.sent_to_vec(sent) for sent in sentences])
 
 
 def compare(candidates, transcriptions):
-    vectors_path = '../../data/fasttext_vectors.p'  # Change this to the relative path on your machine
+    text_vector = TextVector()
+    cand_vecs = text_vector.sents_to_vec(candidates)
+    trans_vecs = text_vector.sents_to_vec(transcriptions)
 
-    try:
-        with open(vectors_path, 'rb') as f:
-            vectors = pickle.load(f)
-            print("I loaded")
-    except:
-        print("Wrong vectors path")
-
-    # Get a list of verbs
-    verbs = getVerbs()
-    weight = 1.2
-
-    print("I made it to past reading vectors")
-
-    vec_sum_cand = np.zeros((len(candidates), len(vectors['find'])))
-    vec_sum_trans = np.zeros((len(transcriptions), len(vectors['find'])))
-
-    for i in range(len(candidates)):
-        cand = clean(candidates[i])
-        for word in cand:
-            try:
-                if (word in verbs):
-                    vec_sum_cand[i] = np.add(vec_sum_cand[i], np.multiply(vectors[word], weight))
-                else:
-                    vec_sum_cand[i] = np.add(vec_sum_cand[i], vectors[word])
-            except:
-                print('No vector of ', word)
-        vec_sum_cand[i] = vec_sum_cand[i] / len(cand)
-
-    for i in range(len(transcriptions)):
-        trans = clean(transcriptions[i])
-        for word in trans:
-            try:
-                if (word in verbs):
-                    vec_sum_trans[i] = np.add(vec_sum_trans[i], np.multiply(vectors[word], weight))
-                else:
-                    vec_sum_trans[i] = np.add(vec_sum_trans[i], vectors[word])
-            except:
-                print('No vector of ', word)
-        vec_sum_trans[i] = vec_sum_trans[i] / len(trans)
-
-    min_similarity = 1
-    for i in range(len(candidates)):
-        for j in range(len(transcriptions)):
-            sim = cosine(vec_sum_cand[i], vec_sum_trans[j])
-            if (min_similarity > sim):
+    cosine_dist = 1
+    c_min, t_min = 0, 0
+    for i, cand_vec in enumerate(cand_vecs):
+        for j, trans_vec in enumerate(trans_vecs):
+            distance = cosine(cand_vec, trans_vec)
+            if cosine_dist > distance:
                 c_min = i
                 t_min = j
-                min_similarity = float(sim)
+                cosine_dist = float(distance)
 
-    return min_similarity, c_min, t_min
+    return cosine_dist, c_min, t_min
 
 
-def compareIndividual(candidate, transcription, vectors, verbs, weight):
+def compare_individual(candidate, transcription, vectors, verbs, weight):
     # Candidate is a sentence
     # Transcriptions is a list of two strings, one from Vosk model and one from Google
     print("I'm comparing", candidate, transcription)
-
-    cand = clean(candidate)
-    trans = clean(transcription)
-
-    vec_sum = np.zeros(len(vectors['find']))
-    for word in cand:
-        try:
-            if (word in verbs):
-                vec_sum = np.add(vec_sum, np.multiply(vectors[word], weight))
-            else:
-                vec_sum = np.add(vec_sum, vectors[word])
-        except:
-            print('No vector of ', word)
-    cand_avg = vec_sum / len(cand)
-
-    vec_sum = np.zeros(len(vectors['find']))
-    for word in trans:
-        try:
-            if (word in verbs):
-                vec_sum = np.add(vec_sum, np.multiply(vectors[word], weight))
-            else:
-                vec_sum = np.add(vec_sum, vectors[word])
-        except:
-            print('No vector of ', word)
-    trans_avg = vec_sum / len(cand)
-
-    return cosine(cand_avg, trans_avg)
+    text_vector = TextVector()
+    cand_vec = text_vector.sents_to_vec(candidate)
+    trans_vec = text_vector.sents_to_vec(transcription)
+    return cosine(cand_vec, trans_vec)
 
 
 if __name__ == "__main__":
     candidates = ['search for objects', 'tidy up', 'bring me something', 'learn new object', 'go to start',
                   'bring me a piece of fruit']
 
-    compare(candidates)
+    transcriptions = ["bring me a piece of fruit", "bring me the cupboard"]
+
+    print(compare(candidates, transcriptions))
