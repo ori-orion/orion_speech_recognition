@@ -236,7 +236,7 @@ def file_sem(f):
     while (i < no_of_sentences):
         j = i
         while (j < no_of_sentences):
-            sent_sim_matr[i][j] = main(ind_sentences[i], ind_sentences[j])
+            sent_sim_matr[i][j] = synset(ind_sentences[i], ind_sentences[j])
             sent_sim_matr[j][i] = sent_sim_matr[i][j]
             j += 1
         i += 1
@@ -261,7 +261,7 @@ def intro():
     elif option == 2:
         sent_one = input("Enter the first sentence : ")
         sent_two = input("Enter the second sentence two :")
-        prob_sim_sent = main(sent_one, sent_two)
+        prob_sim_sent = synset(sent_one, sent_two)
         print(prob_sim_sent)
         # print("Similarity between\n"+sent_one+"\n"+sent_two+"\n\n is : ",prob_sim_sent)
     else:
