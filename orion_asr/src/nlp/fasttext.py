@@ -28,12 +28,15 @@ def clean(sentence):
 
 
 class TextVector:
+    vectors = None
+
     def __init__(self, vectors_path=DEFAULT_VECTORS_PATH, verb_weight=1.2):
-        try:
-            with open(vectors_path, 'rb') as f:
-                self.vectors = pickle.load(f)
-        except:
-            raise Exception(f"Wrong vectors path {vectors_path}")
+        if self.vectors is None:
+            try:
+                with open(vectors_path, 'rb') as f:
+                    self.vectors = pickle.load(f)
+            except:
+                raise Exception(f"Wrong vectors path {vectors_path}")
 
         self.verbs = ['bring', 'find', 'search', 'go', 'deliver', 'tidy', 'learn', 'take', 'is']
         self.verb_weight = verb_weight
