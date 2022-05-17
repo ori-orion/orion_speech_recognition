@@ -2,6 +2,7 @@
 # The input is transcription, and the given example sentences for tasks are candidates
 # The similarity between the sentences is computed using the cosine similarity in 300 dimensional embedding space
 # using pre-trained fasttext vectors
+# https://fasttext.cc/docs/en/unsupervised-tutorial.html
 # Embeddings for sentences are formed as averages of the embeddings of words which are forming them
 # More weight is put on verbs in order to classify tasks. Nouns then determine an object of the task
 # e.g. Bring me a banana vs Bring me something vs Bring me fruit

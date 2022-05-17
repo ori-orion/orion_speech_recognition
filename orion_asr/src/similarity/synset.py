@@ -273,8 +273,9 @@ def intro():
         intro()
 
 
-def compare(candidate_list):
-    sentence = input("Instruction: ")
+def compare(candidate_list, sentence=None):
+    if sentence is None:
+        sentence = input("Instruction: ")
     max = 0
     task = ''
     for i in range(len(candidate_list)):

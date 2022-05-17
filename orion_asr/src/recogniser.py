@@ -8,7 +8,7 @@ import numpy as np
 # import rospy
 from record import Recorder
 from logmmse import logmmse
-from nlp import fasttext, synset
+from similarity import fasttext, synset
 import time
 
 
