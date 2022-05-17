@@ -81,37 +81,43 @@ class Recorder:
 
     def run(self, callback=default_callback):
         print("Started recording audio")
-        with sd.RawInputStream(samplerate=self.samplerate, blocksize=self.blocksize, device=self.device,
-                               dtype='int16', channels=1, callback=self._stream_callback):
-            rec = vosk.KaldiRecognizer(self.model, self.samplerate)
-            frames = []
-            self.keep_running = True
-            self.running = True
-            while self.keep_running:
-                data = self.q.get()
-                frames.append(data)
-                if rec.AcceptWaveform(data):
-                    frame_data = b"".join(frames)
-                    frames = []
-                    audio = AudioData(frame_data, self.samplerate, self.sample_width)
+        try:
+            with sd.RawInputStream(samplerate=self.samplerate, blocksize=self.blocksize, device=self.device,
+                                   dtype='int16', channels=1, callback=self._stream_callback):
+                rec = vosk.KaldiRecognizer(self.model, self.samplerate)
+                frames = []
+                self.keep_running = True
+                self.running = True
+                while self.keep_running:
+                    data = self.q.get()
+                    frames.append(data)
+                    if rec.AcceptWaveform(data):
+                        frame_data = b"".join(frames)
+                        frames = []
+                        audio = AudioData(frame_data, self.samplerate, self.sample_width)
 
-                    vosk_res = json.loads(rec.Result())['text']
-                    try:
-                        google_res = self.r.recognize_google(audio)
-                    except sr.UnknownValueError as e:
-                        google_res = ""
-                    # sphinx_res = self.r.recognize_sphinx(audio)
+                        vosk_res = json.loads(rec.Result())['text']
+                        try:
+                            google_res = self.r.recognize_google(audio)
+                        except sr.UnknownValueError as e:
+                            google_res = ""
+                        # sphinx_res = self.r.recognize_sphinx(audio)
 
-                    # use results in callback
-                    callback(frames, {"vosk": vosk_res, "google": google_res})
+                        if self.save_audio:
+                            # save audio file
+                            th = threading.Thread(target=self.save_to_wave, args=(audio, vosk_res))
+                            th.start()
 
-                    if self.save_audio:
-                        # save audio file
-                        th = threading.Thread(target=self.save_to_wave, args=(audio, vosk_res))
-                        th.start()
-                else:
-                    # print(rec.PartialResult())
-                    pass
+                        # use results in callback
+                        terminate = callback(frames, {"vosk": vosk_res, "google": google_res})
+                        if terminate:
+                            break
+                    else:
+                        # print(rec.PartialResult())
+                        pass
+        except Exception as e:
+            print(e)
+        self.keep_running = False
         self.running = False
         sys.exit(0)
 

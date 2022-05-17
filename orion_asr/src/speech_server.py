@@ -11,9 +11,10 @@ import speech_recognition as sr
 from recogniser import ASR
 import time, os
 import numpy as np
-from record import Recorder
+from recorder import Recorder
 # NOTE: No longer able to use Snowboy, discontinued
 #from hotword import HotwordDetector
+from text_classifier import parse_candidates
 
 
 class SpeechServer(object):
@@ -24,10 +25,8 @@ class SpeechServer(object):
 
     def __init__(self, name):
         self._action_name = name
-        self.recognizer = sr.Recognizer()
-        self.recognizer.pause_threshold = 0.5
-        with sr.Microphone() as source:
-            self.recognizer.adjust_for_ambient_noise(source)
+
+        self.recorder = Recorder(save_audio=True)
 
         self.output_text = SimpleActionClient('talk_request_action', TalkRequestAction)
         rospy.loginfo("Waiting for talk_request_action...")
@@ -68,10 +67,11 @@ class SpeechServer(object):
         if question:
             self.speak(question)
 
-        asr = ASR(self.recognizer)
-        asr.set_candidates(candidates, params)
+        parsed_candidates, candidate_params = parse_candidates(candidates, params)
+        self.recorder.start()
+        rospy.logwarn("Recording started")
 
-        # with sr.Microphone() as source:
+
         with Recorder() as rec:
             source = rec.frames_generator()
 
@@ -88,9 +88,9 @@ class SpeechServer(object):
                     self._snl_as.set_preempted()
                     return
 
-                answer, param, confidence, transcription, succeeded = asr.record(source, rec.config)
+                answer, param, transcription, confidence = asr.record(source, rec.config)
                 rospy.logwarn('Answer: %s, Confidence: %s' % (answer, confidence))
-                if succeeded:
+                if confidence > 0.6:
                     break
                 else:
                     self._snl_feedback.answer, self._snl_feedback.param, self._snl_feedback.confidence, self._snl_feedback.transcription = answer, param, confidence, transcription
