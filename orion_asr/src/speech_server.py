@@ -3,27 +3,23 @@
 import rospy
 from actionlib import SimpleActionServer, SimpleActionClient
 
-from orion_actions.msg import HotwordListenAction, HotwordListenGoal, HotwordListenResult
 from orion_actions.msg import SpeakAndListenAction, SpeakAndListenGoal, SpeakAndListenFeedback, SpeakAndListenResult
+from orion_asr.msg import SpeechText
+from std_msgs.msg import Header
 from std_srvs.srv import Empty
 
 from tmc_msgs.msg import TalkRequestAction, TalkRequestGoal, Voice
-import speech_recognition as sr
-from recogniser import ASR
 import time, os
 import numpy as np
 from recorder import Recorder
-# NOTE: No longer able to use Snowboy, discontinued
-#from hotword import HotwordDetector
-from text_classifier import parse_candidates
+from text_classifier import parse_candidates, classify_text
 
 
-class SpeechServer(object):
-    # create messages that are used to publish feedback/result
-    _hotword_result = HotwordListenResult()
-
-    def __init__(self, name):
+class SpeechServer:
+    def __init__(self, name, confidence_thresh=0.6, classifier="fasttext"):
         self._action_name = name
+        self.confidence_thresh = confidence_thresh
+        self.classifier = classifier
 
         # Recorder
         self.recorder = Recorder(save_audio=True)
@@ -35,8 +31,6 @@ class SpeechServer(object):
         # ROS action servers
         self.snl_as = SimpleActionServer("speak_and_listen", SpeakAndListenAction, execute_cb=self.speak_and_listen_cb, auto_start=False)
         self.snl_as.start()
-        # self._hotword_as = SimpleActionServer("hotword_listen", HotwordListenAction, execute_cb=self.hotword_listen_cb, auto_start=False)
-        # self._hotword_as.start()
 
         # ROS publisher
         self.speech_text_pub = rospy.Publisher('speech_text', SpeechText, queue_size=10)
@@ -47,9 +41,16 @@ class SpeechServer(object):
 
         rospy.logwarn("SpeechServer started:")
 
+    def _speech_to_text_cb(self, frames: list, transcriptions: dict):
+        speech_text = SpeechText()
+        speech_text.header = Header()
+        speech_text.detectors = list(transcriptions.keys())
+        speech_text.transcriptions = list(transcriptions.values())
+        self.speech_text_pub.publish(speech_text)
+
     def start_recording(self):
         rospy.logwarn("Starting speech recording")
-        self.recorder.start()
+        self.recorder.start(self._speech_to_text_cb)
 
     def stop_recording(self):
         rospy.logwarn("Stopping speech recording")
@@ -80,73 +81,42 @@ class SpeechServer(object):
         if question:
             self.speak(question)
 
-        parsed_candidates, candidate_params = parse_candidates(candidates, params)
-        self.recorder.start()
+        start_time = time.time()
+        timelimit = start_time + timeout if timeout else np.inf
+
+        self.start_recording()
         rospy.logwarn("Recording started")
 
+        parsed_candidates, candidate_params = parse_candidates(candidates, params)
 
-        with Recorder() as rec:
-            source = rec.frames_generator()
+        while not rospy.is_shutdown() and timelimit - time.time() > 0:
+            results, timestamp = self.recorder.text_q.get()
+            if timestamp < start_time:
+                continue
+            print(results, timestamp)
 
-            rospy.loginfo("Started recording...")
-
-            timelimit = time.time() + timeout if timeout else np.inf
-
-            answer, param, confidence, transcription, succeeded = "", "", 0.0, "", False
-
-            while timelimit - time.time() > 0:
-
-                if self.snl_as.is_preempt_requested():
-                    rospy.logwarn('%s: Preempted' % self._action_name)
-                    self.snl_as.set_preempted()
-                    return
-
-                answer, param, transcription, confidence = asr.record(source, rec.config)
-                rospy.logwarn('Answer: %s, Confidence: %s' % (answer, confidence))
-                if confidence > 0.6:
-                    break
-                else:
-                    snl_feedback = SpeakAndListenFeedback()
-                    snl_feedback.answer, snl_feedback.param, snl_feedback.confidence, snl_feedback.transcription = answer, param, confidence, transcription
-                    snl_feedback.remaining = timelimit - time.time() if timeout else 0
-                    self.snl_as.publish_feedback(snl_feedback)
-        if succeeded:
-            self.speak("OK. You said " + answer)
-        else:
-            self.speak("Sorry, I didn't get it.")
-
-        snl_result = SpeakAndListenResult()
-        snl_result.answer, snl_result.param, snl_result.confidence, snl_result.transcription, snl_result.succeeded = answer, param, confidence, transcription, succeeded
-        self.snl_as.set_succeeded(snl_result)
-
-    def hotword_listen_cb(self, goal):
-
-        timeout = goal.timeout
-        hotwords = goal.hotwords
-        timelimit = time.time() + timeout if timeout else np.inf
-
-        rospy.logwarn("HotwordListen action started:")
-
-        def preempt_callback():
-            if self._hotword_as.is_preempt_requested():
+            if self.snl_as.is_preempt_requested():
                 rospy.logwarn('%s: Preempted' % self._action_name)
-                self._hotword_as.set_preempted()
-                return True
-            if timelimit - time.time() <= 0:
-                return True
-            return False
+                self.snl_as.set_preempted()
+                return
 
-        detector = HotwordDetector(hotwords, preempt_callback)
-        detector.run()
+            answer, param, transcription, confidence = classify_text(parsed_candidates, candidate_params, list(results.values()), algorithm=self.classifier)
+            rospy.logwarn('Answer: %s, Confidence: %s' % (answer, confidence))
 
-        if detector.detected_hotword:
-            rospy.loginfo("Identified hotword: %s" % detector.detected_hotword)
-            self.speak("You said " + detector.detected_hotword)
-        else:
-            rospy.loginfo("No hotword detected")
+            if confidence > self.confidence_thresh:
+                self.speak("OK. You said " + answer)
+                snl_result = SpeakAndListenResult()
+                snl_result.answer, snl_result.param, snl_result.confidence, snl_result.transcription, snl_result.succeeded = answer, param, confidence, transcription, succeeded
+                self.snl_as.set_succeeded(snl_result)
+            else:
+                snl_feedback = SpeakAndListenFeedback()
+                snl_feedback.answer, snl_feedback.param, snl_feedback.confidence, snl_feedback.transcription = answer, param, confidence, transcription
+                snl_feedback.remaining = timelimit - time.time() if timeout else 0
+                self.snl_as.publish_feedback(snl_feedback)
+                self.speak("Sorry, please say it again.")
 
-        self._hotword_result.hotword, self._hotword_result.succeeded = detector.detected_hotword, detector.detected_hotword != ""
-        self._hotword_as.set_succeeded(self._hotword_result)
+        self.speak("Sorry, I didn't get it.")
+        self.snl_as.set_aborted()
 
 
 if __name__ == '__main__':

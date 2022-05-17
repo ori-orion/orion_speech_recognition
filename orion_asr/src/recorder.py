@@ -48,7 +48,8 @@ class Recorder:
         self.device = device
         self.blocksize = blocksize
 
-        self.q = queue.Queue()
+        self.audio_q = queue.Queue()
+        self.text_q = queue.Queue(maxsize=100)
 
         self.sample_width = pyaudio.get_sample_size(pyaudio.paInt16)  # size of each sample
 
@@ -89,7 +90,7 @@ class Recorder:
                 self.keep_running = True
                 self.running = True
                 while self.keep_running:
-                    data = self.q.get()
+                    data = self.audio_q.get()
                     frames.append(data)
                     if rec.AcceptWaveform(data):
                         frame_data = b"".join(frames)
@@ -108,8 +109,12 @@ class Recorder:
                             th = threading.Thread(target=self.save_to_wave, args=(audio, vosk_res))
                             th.start()
 
+                        results = {"vosk": vosk_res, "google": google_res}
+
+                        self.text_q.put((results, time.time()))
+
                         # use results in callback
-                        terminate = callback(frames, {"vosk": vosk_res, "google": google_res})
+                        terminate = callback(frames, results)
                         if terminate:
                             break
                     else:
@@ -125,7 +130,7 @@ class Recorder:
         """This is called (from a separate thread) for each audio block."""
         if status:
             print(status, file=sys.stderr)
-        self.q.put(bytes(indata))
+        self.audio_q.put(bytes(indata))
 
     def save_to_wave(self, audio: AudioData, text):
         text = '_'.join(text.split(' '))
