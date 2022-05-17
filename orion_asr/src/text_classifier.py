@@ -22,7 +22,7 @@ def parse_candidates(candidates, params):
     return parsed_candidates, candidate_params
 
 
-def classify_text(transcriptions: List[str], candidates: List[str], candidate_params: List[str], algorithm='fasttext'):
+def classify_text(candidates: List[str], candidate_params: List[str], transcriptions: List[str], algorithm='fasttext'):
     """
     Retrieves the best target command, best transcription, most likely variable content and confidence level
     given a list of feasible transcriptions and a set of target candidates and variables.
@@ -34,7 +34,7 @@ def classify_text(transcriptions: List[str], candidates: List[str], candidate_pa
     best_candidate, best_transcription, confidence = classifier(candidates, transcriptions)
 
     param = candidate_params[candidates.index(best_candidate)]
-    return best_candidate, best_transcription, param, confidence
+    return best_candidate, param, best_transcription, confidence
 
 
 def classify_Levenshtein(candidates: List[str], transcriptions: List[str]):
@@ -96,6 +96,6 @@ if __name__ == "__main__":
     transcriptions = ["bring me a apple", "where is bathroom"]
 
     start = time.time()
-    print(classify_text(transcriptions, parsed_candidates, candidate_params, algorithm="fasttext"))
+    print(classify_text(parsed_candidates, candidate_params, transcriptions, algorithm="fasttext"))
     end = time.time()
     print(end - start)
