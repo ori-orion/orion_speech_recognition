@@ -44,6 +44,8 @@ class SpeechServer:
     def _speech_to_text_cb(self, frames: list, transcriptions: dict):
         speech_text = SpeechText()
         speech_text.header = Header()
+        speech_text.header.stamp = rospy.Time.now()
+        speech_text.header.frame_id = "speech_text"
         speech_text.detectors = list(transcriptions.keys())
         speech_text.transcriptions = list(transcriptions.values())
         self.speech_text_pub.publish(speech_text)
@@ -108,7 +110,6 @@ class SpeechServer:
                 snl_result = SpeakAndListenResult()
                 snl_result.answer, snl_result.param, snl_result.confidence, snl_result.transcription, snl_result.succeeded = answer, param, confidence, transcription, True
                 self.snl_as.set_succeeded(snl_result)
-                self.stop_recording()
                 break
             else:
                 snl_feedback = SpeakAndListenFeedback()
