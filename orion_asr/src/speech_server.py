@@ -17,7 +17,7 @@ from text_classifier import parse_candidates, classify_text
 
 class SpeechServer:
     def __init__(self, name, confidence_thresh=0.6, classifier="fasttext"):
-        rospy.logwarn(f"Initialising {name}")
+        rospy.loginfo(f"Initialising {name}")
         self._action_name = name
         self.confidence_thresh = confidence_thresh
         self.classifier = classifier
@@ -40,7 +40,7 @@ class SpeechServer:
         self.text_to_speech = SimpleActionClient('talk_request_action', TalkRequestAction)
         self.text_to_speech.wait_for_server(timeout=rospy.Duration(5))
 
-        rospy.logwarn("SpeechServer started:")
+        rospy.loginfo("SpeechServer started:")
 
     def _speech_to_text_cb(self, frames: list, transcriptions: dict):
         speech_text = SpeechText()
@@ -52,11 +52,11 @@ class SpeechServer:
         self.speech_text_pub.publish(speech_text)
 
     def start_recording(self):
-        rospy.logwarn("Starting speech recording")
+        rospy.loginfo("Starting speech recording")
         self.recorder.start(self._speech_to_text_cb)
 
     def stop_recording(self):
-        rospy.logwarn("Stopping speech recording")
+        rospy.loginfo("Stopping speech recording")
         self.recorder.stop()
 
     def speak(self, text):
@@ -74,12 +74,12 @@ class SpeechServer:
         params = goal.params
         timeout = goal.timeout
 
-        rospy.logwarn("SpeakAndListen action started:")
-        rospy.logwarn("Question: " + question)
-        # rospy.logwarn("Candidates:")
-        # rospy.logwarn(candidates)
-        # rospy.logwarn("Params:")
-        # rospy.logwarn(params)
+        rospy.loginfo("SpeakAndListen action started:")
+        rospy.loginfo("Question: " + question)
+        # rospy.loginfo("Candidates:")
+        # rospy.loginfo(candidates)
+        # rospy.loginfo("Params:")
+        # rospy.loginfo(params)
 
         if question:
             self.speak(question)
@@ -88,7 +88,7 @@ class SpeechServer:
         timelimit = start_time + timeout if timeout else np.inf
 
         self.start_recording()
-        rospy.logwarn("Recording started")
+        rospy.loginfo("Recording started")
 
         parsed_candidates, candidate_params = parse_candidates(candidates, params)
 
@@ -99,12 +99,12 @@ class SpeechServer:
             print(results, timestamp)
 
             if self.snl_as.is_preempt_requested():
-                rospy.logwarn('%s: Preempted' % self._action_name)
+                rospy.logwarn('Preempted SpeakAndListen')
                 self.snl_as.set_preempted()
                 return
 
             answer, param, transcription, confidence = classify_text(parsed_candidates, candidate_params, list(results.values()), algorithm=self.classifier)
-            rospy.logwarn('Answer: %s, Confidence: %s' % (answer, confidence))
+            rospy.loginfo('Answer: %s, Confidence: %s' % (answer, confidence))
 
             if confidence > self.confidence_thresh:
                 self.speak("OK. You said " + answer)
@@ -119,6 +119,7 @@ class SpeechServer:
                 self.snl_as.publish_feedback(snl_feedback)
                 self.speak("Sorry, please say it again.")
         else:   # if while loop exits without a break, i.e. no success
+            rospy.logwarn('Aborted SpeakAndListen')
             self.speak("Sorry, I didn't get it.")
             self.snl_as.set_aborted()
         self.stop_recording()
