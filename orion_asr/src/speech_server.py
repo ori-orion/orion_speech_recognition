@@ -3,8 +3,8 @@
 import rospy
 from actionlib import SimpleActionServer, SimpleActionClient
 
-from orion_actions.msg import SpeakAndListenAction, SpeakAndListenGoal, SpeakAndListenFeedback, SpeakAndListenResult
-from orion_asr.msg import SpeechText
+from orion_actions.msg import SpeakAndListenAction, SpeakAndListenGoal, SpeakAndListenFeedback, SpeakAndListenResult, \
+    SpeechText
 from std_msgs.msg import Header
 from std_srvs.srv import Empty
 
