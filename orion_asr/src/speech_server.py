@@ -106,17 +106,20 @@ class SpeechServer:
             if confidence > self.confidence_thresh:
                 self.speak("OK. You said " + answer)
                 snl_result = SpeakAndListenResult()
-                snl_result.answer, snl_result.param, snl_result.confidence, snl_result.transcription, snl_result.succeeded = answer, param, confidence, transcription, succeeded
+                snl_result.answer, snl_result.param, snl_result.confidence, snl_result.transcription, snl_result.succeeded = answer, param, confidence, transcription, True
                 self.snl_as.set_succeeded(snl_result)
+                self.stop_recording()
+                break
             else:
                 snl_feedback = SpeakAndListenFeedback()
                 snl_feedback.answer, snl_feedback.param, snl_feedback.confidence, snl_feedback.transcription = answer, param, confidence, transcription
                 snl_feedback.remaining = timelimit - time.time() if timeout else 0
                 self.snl_as.publish_feedback(snl_feedback)
                 self.speak("Sorry, please say it again.")
-
-        self.speak("Sorry, I didn't get it.")
-        self.snl_as.set_aborted()
+        else:   # if while loop exits without a break, i.e. no success
+            self.speak("Sorry, I didn't get it.")
+            self.snl_as.set_aborted()
+        self.stop_recording()
 
 
 if __name__ == '__main__':

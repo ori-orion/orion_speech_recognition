@@ -41,19 +41,20 @@ class TextVector:
 
         self.verbs = ['bring', 'find', 'search', 'go', 'deliver', 'tidy', 'learn', 'take', 'is']
         self.verb_weight = verb_weight
+        self.word_size = len(self.vectors['find'])
 
     def sent_to_vec(self, sentence):
         words = clean(sentence)
-        vecs = []
+        vec_sum = np.zeros(self.word_size)
         for word in words:
             try:
                 vec = np.array(self.vectors[word])
                 if word in self.verbs:
                     vec = vec * self.verb_weight
-                vecs.append(vec)
+                vec_sum += vec
             except:
                 print('No vector of ', word)
-        return np.mean(vecs, axis=0)
+        return vec_sum / len(sentence)
 
     def sents_to_vec(self, sentences: List[str]):
         return np.stack([self.sent_to_vec(sent) for sent in sentences])
