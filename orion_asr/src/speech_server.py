@@ -16,7 +16,7 @@ from text_classifier import parse_candidates, classify_text
 
 
 class SpeechServer:
-    def __init__(self, name, confidence_thresh=0.6, classifier="fasttext"):
+    def __init__(self, name, confidence_thresh=0.6, classifier="levenshtein"):
         rospy.loginfo(f"Initialising {name}")
         self._action_name = name
         self.confidence_thresh = confidence_thresh
