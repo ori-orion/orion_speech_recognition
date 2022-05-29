@@ -30,8 +30,6 @@ def default_callback(frames, results: dict):
 
 
 class Recorder:
-    running = False
-
     def __init__(self, model_path=DEFAULT_MODEL_PATH, filename=None, device=None, samplerate=None, blocksize=8000,
                  audio_path=AUDIO_SAVE_PATH, save_audio=False, **kwargs):
         if not os.path.exists(model_path):
@@ -65,6 +63,7 @@ class Recorder:
         self.save_audio = save_audio
 
         self.keep_running = False
+        self.running = False
 
     def __del__(self):
         if self.running:
