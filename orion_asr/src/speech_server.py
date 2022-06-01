@@ -117,7 +117,6 @@ class SpeechServer:
                 snl_feedback.answer, snl_feedback.param, snl_feedback.confidence, snl_feedback.transcription = answer, param, confidence, transcription
                 snl_feedback.remaining = timelimit - time.time() if timeout else 0
                 self.snl_as.publish_feedback(snl_feedback)
-                self.speak("Sorry, please say it again.")
         else:   # if while loop exits without a break, i.e. no success
             rospy.logwarn('Aborted SpeakAndListen')
             self.speak("Sorry, I didn't get it.")
