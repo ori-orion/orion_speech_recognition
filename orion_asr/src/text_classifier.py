@@ -22,7 +22,7 @@ def parse_candidates(candidates, params):
     return parsed_candidates, candidate_params
 
 
-def classify_text(candidates: List[str], candidate_params: List[str], transcriptions: List[str], algorithm='fasttext'):
+def classify_text(candidates: List[str], candidate_params: List[str], transcriptions: List[str], algorithm='levenshtein'):
     """
     Retrieves the best target command, best transcription, most likely variable content and confidence level
     given a list of feasible transcriptions and a set of target candidates and variables.
