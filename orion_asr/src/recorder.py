@@ -25,8 +25,14 @@ AUDIO_SAVE_PATH = os.path.join(ROOT_DIR, "tmp")
 
 
 def default_callback(frames, results: dict):
+    """
+    :param frames:
+    :param results:
+    :return: boolean of whether recording should terminate
+    """
     for name, text in results.items():
         print(f"{name} says: ", text)
+    return False
 
 
 class Recorder:
@@ -49,7 +55,7 @@ class Recorder:
         self.blocksize = blocksize
 
         self.audio_q = queue.Queue()
-        self.text_q = queue.Queue(maxsize=100)
+        self.outputs_q = queue.Queue(maxsize=100)
 
         self.sample_width = pyaudio.get_sample_size(pyaudio.paInt16)  # size of each sample
 
@@ -114,7 +120,7 @@ class Recorder:
 
                         results = {"vosk": vosk_res, "google": google_res}
 
-                        self.text_q.put((results, time.time()))
+                        self.outputs_q.put((results, time.time()))
 
                         # use results in callback
                         terminate = callback(frames, results)

@@ -11,16 +11,29 @@
 
 import argparse
 import os
+import queue
 import struct
+import time
 import wave
 from datetime import datetime
-from queue import Queue
 from threading import Thread
 
 import pvporcupine
 from pvrecorder import PvRecorder
 
-PORCUPINE_ACCESS_KEY = "aeglkajwelkgjaewkl"
+from hotword.utils import hotword_keyword_paths
+
+
+def default_callback(hotword: str):
+    """
+    :param hotword: hotword string
+    :return: boolean of whether recording should terminate
+    """
+    print('[%s] Detected %s' % (str(datetime.now()), hotword))
+    return False
+
+
+PORCUPINE_ACCESS_KEY = "5pKR+RMiRQ1ZUcqcnfK3Rsi8F0ob9pTXyNSbgdLjEFavSXPQJlqCQQ=="
 
 
 class PorcupineHotwordDetector(Thread):
@@ -32,11 +45,11 @@ class PorcupineHotwordDetector(Thread):
 
     def __init__(
             self,
-            access_key,
-            keyword_paths,
+            keywords,
+            sensitivities=None,
+            access_key=PORCUPINE_ACCESS_KEY,
             library_path=pvporcupine.LIBRARY_PATH,
             model_path=pvporcupine.MODEL_PATH,
-            sensitivities=None,
             input_device_index=None,
             output_path=None):
 
@@ -45,7 +58,7 @@ class PorcupineHotwordDetector(Thread):
 
         :param library_path: Absolute path to Porcupine's dynamic library.
         :param model_path: Absolute path to the file containing model parameters.
-        :param keyword_paths: Absolute paths to keyword model files.
+        :param keywords: Keywords
         :param sensitivities: Sensitivities for detecting keywords. Each value should be a number within [0, 1]. A
         higher sensitivity results in fewer misses at the cost of increasing the false alarm rate. If not set 0.5 will
         be used.
@@ -56,18 +69,27 @@ class PorcupineHotwordDetector(Thread):
 
         super(PorcupineHotwordDetector, self).__init__()
 
+        if sensitivities is None:
+            sensitivities = [0.5] * len(keywords)
+
+        if len(keywords) != len(sensitivities):
+            raise ValueError('Number of keywords does not match the number of sensitivities.')
+
+        keyword_paths = hotword_keyword_paths()
+
+        print(f"Listening to hotwords {keywords}. The full list of available hotwords are {keyword_paths.keys()}")
+
         self._access_key = access_key
         self._library_path = library_path
         self._model_path = model_path
-        self._keyword_paths = keyword_paths
+        self._keyword_paths = [keyword_paths[k] for k in keywords]
         self._sensitivities = sensitivities
         self._input_device_index = input_device_index
 
         self._output_path = output_path
+        self.outputs_q = queue.Queue(maxsize=100)
 
-        self.q_results = Queue()
-
-    def run(self):
+    def run(self, callback=default_callback):
         """
          Creates an input audio stream, instantiates an instance of Porcupine object, and monitors the audio stream for
          occurrences of the wake word(s). It prints the time of detection for each occurrence and the wake word.
@@ -114,8 +136,13 @@ class PorcupineHotwordDetector(Thread):
 
                 result = porcupine.process(pcm)
                 if result >= 0:
-                    self.q_results.put({"hotword": keywords[result], "time": datetime.now()})
-                    print('[%s] Detected %s' % (str(datetime.now()), keywords[result]))
+                    self.outputs_q.put((keywords[result], time.time()))
+
+                    # use results in callback
+                    terminate = callback(keywords[result])
+                    if terminate:
+                        break
+
         except pvporcupine.PorcupineInvalidArgumentError as e:
             print("One or more arguments provided to Porcupine is invalid: {\n" +
                   f"\t{self._access_key=}\n" +
@@ -165,17 +192,23 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--access_key',
-                        help='AccessKey obtained from Picovoice Console (https://console.picovoice.ai/)')
+                        help='AccessKey obtained from Picovoice Console (https://console.picovoice.ai/)',
+                        default=PORCUPINE_ACCESS_KEY)
 
     parser.add_argument(
-        '--keyword_paths',
+        '--keywords',
         nargs='+',
-        help="Absolute paths to keyword model files. If not set it will be populated from `--keywords` argument")
+        help='List of default keywords for detection. Available keywords: %s' % ', '.join(sorted(pvporcupine.KEYWORDS)),
+        choices=sorted(pvporcupine.KEYWORDS),
+        metavar='')
+
+    parser.add_argument('--library_path', help='Absolute path to dynamic library.', default=pvporcupine.LIBRARY_PATH)
 
     parser.add_argument(
         '--model_path',
         help='Absolute path to the file containing model parameters.',
-        default=pvporcupine.MODEL_PATH)
+        default=pvporcupine.MODEL_PATH
+    )
 
     parser.add_argument(
         '--sensitivities',
@@ -199,29 +232,18 @@ def main():
     else:
         if args.access_key is None:
             raise ValueError("AccessKey (--access_key) is required")
-        if args.keyword_paths is None:
-            if args.keywords is None:
-                raise ValueError("Either `--keywords` or `--keyword_paths` must be set.")
-
-            keyword_paths = [pvporcupine.KEYWORD_PATHS[x] for x in args.keywords]
-        else:
-            keyword_paths = args.keyword_paths
-
-        if args.sensitivities is None:
-            args.sensitivities = [0.5] * len(keyword_paths)
-
-        if len(keyword_paths) != len(args.sensitivities):
-            raise ValueError('Number of keywords does not match the number of sensitivities.')
 
         PorcupineHotwordDetector(
+            keywords=args.keyword_paths,
+            sensitivities=args.sensitivities,
             access_key=args.access_key,
             library_path=args.library_path,
             model_path=args.model_path,
-            keyword_paths=keyword_paths,
-            sensitivities=args.sensitivities,
             output_path=args.output_path,
             input_device_index=args.audio_device_index).run()
 
 
 if __name__ == '__main__':
+    print(pvporcupine.KEYWORDS)
+    print(pvporcupine.KEYWORD_PATHS)
     main()

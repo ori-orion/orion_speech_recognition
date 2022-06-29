@@ -93,7 +93,7 @@ class SpeechServer:
         parsed_candidates, candidate_params = parse_candidates(candidates, params)
 
         while not rospy.is_shutdown() and timelimit - time.time() > 0:
-            results, timestamp = self.recorder.text_q.get()
+            results, timestamp = self.recorder.outputs_q.get()
             if timestamp < start_time:
                 continue
             print(results, timestamp)
