@@ -30,10 +30,10 @@ class PorcupineDemo(Thread):
     def __init__(
             self,
             access_key,
-            library_path,
-            model_path,
             keyword_paths,
-            sensitivities,
+            sensitivities=None,
+            library_path=pvporcupine.LIBRARY_PATH,
+            model_path=pvporcupine.MODEL_PATH,
             input_device_index=None,
             output_path=None):
 
@@ -52,6 +52,12 @@ class PorcupineDemo(Thread):
         """
 
         super(PorcupineDemo, self).__init__()
+
+        if sensitivities is None:
+            sensitivities = [0.5] * len(keyword_paths)
+
+        if len(keyword_paths) != len(sensitivities):
+            raise ValueError('Number of keywords does not match the number of sensitivities.')
 
         self._access_key = access_key
         self._library_path = library_path
@@ -178,7 +184,8 @@ def main():
     parser.add_argument(
         '--model_path',
         help='Absolute path to the file containing model parameters.',
-        default=pvporcupine.MODEL_PATH)
+        default=pvporcupine.MODEL_PATH
+    )
 
     parser.add_argument(
         '--sensitivities',
@@ -210,18 +217,12 @@ def main():
         else:
             keyword_paths = args.keyword_paths
 
-        if args.sensitivities is None:
-            args.sensitivities = [0.5] * len(keyword_paths)
-
-        if len(keyword_paths) != len(args.sensitivities):
-            raise ValueError('Number of keywords does not match the number of sensitivities.')
-
         PorcupineDemo(
             access_key=args.access_key,
-            library_path=args.library_path,
-            model_path=args.model_path,
             keyword_paths=keyword_paths,
             sensitivities=args.sensitivities,
+            library_path=args.library_path,
+            model_path=args.model_path,
             output_path=args.output_path,
             input_device_index=args.audio_device_index).run()
 
