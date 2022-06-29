@@ -187,8 +187,7 @@ def get_vosk_args():
 
 
 if __name__ == "__main__":
-    # config = get_vosk_args()
-    config = {}
+    config = get_vosk_args()
 
     recorder = Recorder(**config, save_audio=True)
     recorder.start()

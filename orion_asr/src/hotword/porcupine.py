@@ -21,6 +21,9 @@ from threading import Thread
 import pvporcupine
 from pvrecorder import PvRecorder
 
+import sys
+sys.path.append(".")
+
 from hotword.utils import hotword_keyword_paths
 
 
@@ -79,6 +82,8 @@ class PorcupineHotwordDetector(Thread):
 
         print(f"Listening to hotwords {keywords}. The full list of available hotwords are {keyword_paths.keys()}")
 
+        self.keywords = keywords
+
         self._access_key = access_key
         self._library_path = library_path
         self._model_path = model_path
@@ -94,15 +99,6 @@ class PorcupineHotwordDetector(Thread):
          Creates an input audio stream, instantiates an instance of Porcupine object, and monitors the audio stream for
          occurrences of the wake word(s). It prints the time of detection for each occurrence and the wake word.
          """
-
-        keywords = list()
-        for x in self._keyword_paths:
-            keyword_phrase_part = os.path.basename(x).replace('.ppn', '').split('_')
-            if len(keyword_phrase_part) > 6:
-                keywords.append(' '.join(keyword_phrase_part[0:-6]))
-            else:
-                keywords.append(keyword_phrase_part[0])
-
         porcupine = None
         recorder = None
         wav_file = None
@@ -124,7 +120,7 @@ class PorcupineHotwordDetector(Thread):
             print(f'Using device: {recorder.selected_device}')
 
             print('Listening {')
-            for keyword, sensitivity in zip(keywords, self._sensitivities):
+            for keyword, sensitivity in zip(self.keywords, self._sensitivities):
                 print('  %s (%.2f)' % (keyword, sensitivity))
             print('}')
 
@@ -136,10 +132,10 @@ class PorcupineHotwordDetector(Thread):
 
                 result = porcupine.process(pcm)
                 if result >= 0:
-                    self.outputs_q.put((keywords[result], time.time()))
+                    self.outputs_q.put((self.keywords[result], time.time()))
 
                     # use results in callback
-                    terminate = callback(keywords[result])
+                    terminate = callback(self.keywords[result])
                     if terminate:
                         break
 
@@ -199,7 +195,7 @@ def main():
         '--keywords',
         nargs='+',
         help='List of default keywords for detection. Available keywords: %s' % ', '.join(sorted(pvporcupine.KEYWORDS)),
-        choices=sorted(pvporcupine.KEYWORDS),
+        choices=sorted(hotword_keyword_paths().keys()),
         metavar='')
 
     parser.add_argument('--library_path', help='Absolute path to dynamic library.', default=pvporcupine.LIBRARY_PATH)
@@ -232,9 +228,11 @@ def main():
     else:
         if args.access_key is None:
             raise ValueError("AccessKey (--access_key) is required")
+        if args.keywords is None:
+            raise ValueError("Keywords (--keywords) is required")
 
         PorcupineHotwordDetector(
-            keywords=args.keyword_paths,
+            keywords=args.keywords,
             sensitivities=args.sensitivities,
             access_key=args.access_key,
             library_path=args.library_path,
@@ -244,6 +242,4 @@ def main():
 
 
 if __name__ == '__main__':
-    print(pvporcupine.KEYWORDS)
-    print(pvporcupine.KEYWORD_PATHS)
     main()
