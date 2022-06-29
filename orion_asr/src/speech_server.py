@@ -4,13 +4,15 @@ import rospy
 from actionlib import SimpleActionServer, SimpleActionClient
 
 from orion_actions.msg import SpeakAndListenAction, SpeakAndListenGoal, SpeakAndListenFeedback, SpeakAndListenResult, \
-    SpeechText
-from std_msgs.msg import Header
+    SpeechText, Hotword
+from std_msgs.msg import Header, String
 from std_srvs.srv import Empty
 
 from tmc_msgs.msg import TalkRequestAction, TalkRequestGoal, Voice
 import time, os
 import numpy as np
+
+from hotword.porcupine import PorcupineHotwordDetector
 from recorder import Recorder
 from text_classifier import parse_candidates, classify_text
 
@@ -35,12 +37,27 @@ class SpeechServer:
 
         # ROS publisher
         self.speech_text_pub = rospy.Publisher('speech_text', SpeechText, queue_size=10)
+        self.hotword_pub = rospy.Publisher('hotword', Hotword, queue_size=10)
 
         # ROS action clients
         self.text_to_speech = SimpleActionClient('talk_request_action', TalkRequestAction)
         self.text_to_speech.wait_for_server(timeout=rospy.Duration(5))
 
         rospy.loginfo("SpeechServer started:")
+
+        self.detector = PorcupineHotwordDetector(keywords=("hey robot", "i'm ready"))
+        self.detector.start(self._hotword_listen_cb)
+        rospy.loginfo("Hotword detector started:")
+
+        rospy.on_shutdown(self.detector.stop)
+
+    def _hotword_listen_cb(self, hotword):
+        rospy.loginfo(f"Detected hotword: {hotword}")
+        hotword_msg = Hotword()
+        hotword_msg.stamp = rospy.Time.now()
+        hotword_msg.hotword = hotword
+        self.hotword_pub.publish(hotword_msg)
+        return False
 
     def _speech_to_text_cb(self, frames: list, transcriptions: dict):
         speech_text = SpeechText()

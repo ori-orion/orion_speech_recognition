@@ -13,10 +13,10 @@ import argparse
 import os
 import queue
 import struct
+import threading
 import time
 import wave
 from datetime import datetime
-from threading import Thread
 
 import pvporcupine
 from pvrecorder import PvRecorder
@@ -39,7 +39,7 @@ def default_callback(hotword: str):
 PORCUPINE_ACCESS_KEY = "5pKR+RMiRQ1ZUcqcnfK3Rsi8F0ob9pTXyNSbgdLjEFavSXPQJlqCQQ=="
 
 
-class PorcupineHotwordDetector(Thread):
+class PorcupineHotwordDetector:
     """
     Microphone Demo for Porcupine wake word engine. It creates an input audio stream from a microphone, monitors it, and
     upon detecting the specified wake word(s) prints the detection time and wake word on console. It optionally saves
@@ -48,12 +48,12 @@ class PorcupineHotwordDetector(Thread):
 
     def __init__(
             self,
-            keywords,
+            keywords=None,
             sensitivities=None,
             access_key=PORCUPINE_ACCESS_KEY,
             library_path=pvporcupine.LIBRARY_PATH,
             model_path=pvporcupine.MODEL_PATH,
-            input_device_index=None,
+            input_device_index=-1,
             output_path=None):
 
         """
@@ -72,13 +72,15 @@ class PorcupineHotwordDetector(Thread):
 
         super(PorcupineHotwordDetector, self).__init__()
 
+        keyword_paths = hotword_keyword_paths()
+        if keywords is None:
+            keywords = keyword_paths.keys()
+
         if sensitivities is None:
             sensitivities = [0.5] * len(keywords)
 
         if len(keywords) != len(sensitivities):
             raise ValueError('Number of keywords does not match the number of sensitivities.')
-
-        keyword_paths = hotword_keyword_paths()
 
         print(f"Listening to hotwords {keywords}. The full list of available hotwords are {keyword_paths.keys()}")
 
@@ -93,6 +95,27 @@ class PorcupineHotwordDetector(Thread):
 
         self._output_path = output_path
         self.outputs_q = queue.Queue(maxsize=100)
+
+        self.keep_running = False
+        self.running = False
+
+    def __del__(self):
+        if self.running:
+            self.stop()
+
+    def start(self, callback=default_callback):
+        if self.running:
+            print("Already running")
+        else:
+            th = threading.Thread(target=self.run, args=(callback,))
+            th.start()
+
+    def stop(self):
+        print("Stopping recording...")
+        self.keep_running = False
+        while self.running:
+            time.sleep(0.1)
+        print("Stopped recording")
 
     def run(self, callback=default_callback):
         """
@@ -124,7 +147,9 @@ class PorcupineHotwordDetector(Thread):
                 print('  %s (%.2f)' % (keyword, sensitivity))
             print('}')
 
-            while True:
+            self.keep_running = True
+            self.running = True
+            while self.keep_running:
                 pcm = recorder.read()
 
                 if wav_file is not None:
@@ -165,8 +190,9 @@ class PorcupineHotwordDetector(Thread):
             print(f"Failed to initialize Porcupine")
             raise e
         except KeyboardInterrupt:
-            print('Stopping ...')
+            pass
         finally:
+            print('Stopping ...')
             if porcupine is not None:
                 porcupine.delete()
 
@@ -175,6 +201,9 @@ class PorcupineHotwordDetector(Thread):
 
             if wav_file is not None:
                 wav_file.close()
+        self.keep_running = False
+        self.running = False
+        sys.exit(0)
 
     @classmethod
     def show_audio_devices(cls):
@@ -238,7 +267,7 @@ def main():
             library_path=args.library_path,
             model_path=args.model_path,
             output_path=args.output_path,
-            input_device_index=args.audio_device_index).run()
+            input_device_index=args.audio_device_index).start()
 
 
 if __name__ == '__main__':
