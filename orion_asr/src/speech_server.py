@@ -27,13 +27,13 @@ class SpeechServer:
         # Recorder
         self.recorder = Recorder(save_audio=True)
 
-        # ROS services
-        self._rec_start_srv = rospy.Service('recording_start', Empty, self.start_recording)
-        self._rec_stop_srv = rospy.Service('recording_stop', Empty, self.stop_recording)
-
         # ROS action servers
         self.snl_as = SimpleActionServer("speak_and_listen", SpeakAndListenAction, execute_cb=self.speak_and_listen_cb, auto_start=False)
         self.snl_as.start()
+
+        # ROS services
+        self._rec_start_srv = rospy.Service('recording_start', Empty, self.start_recording)
+        self._rec_stop_srv = rospy.Service('recording_stop', Empty, self.stop_recording)
 
         # ROS publisher
         self.speech_text_pub = rospy.Publisher('speech_text', SpeechText, queue_size=10)
