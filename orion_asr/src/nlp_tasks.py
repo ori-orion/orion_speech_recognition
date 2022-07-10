@@ -17,7 +17,7 @@ def recognise_name(transcriptions: List[str]):
                 found_names.append(word.capitalize())
 
     if found_names:
-        name = found_names[-1]
+        name = found_names[0]
         confidence = 1.0
     else:
         name = ""
@@ -27,4 +27,3 @@ def recognise_name(transcriptions: List[str]):
 
 if __name__ == "__main__":
     print(recognise_name(["Hi, I am Shawn"]))
-    print(recognise_name(["Hi, my name is Shawn"]))     # fails (thinks "My" is a name)

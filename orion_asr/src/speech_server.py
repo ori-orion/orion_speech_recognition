@@ -4,7 +4,7 @@ import rospy
 from actionlib import SimpleActionServer, SimpleActionClient
 
 from orion_actions.msg import SpeakAndListenAction, SpeakAndListenGoal, SpeakAndListenFeedback, SpeakAndListenResult, \
-    SpeechText, Hotword
+    SpeechText, Hotword, AskPersonNameAction, AskPersonNameResult
 from std_msgs.msg import Header, String
 from std_srvs.srv import Empty
 
@@ -13,6 +13,7 @@ import time, os
 import numpy as np
 
 from hotword.porcupine import PorcupineHotwordDetector
+from nlp_tasks import recognise_name
 from recorder import Recorder
 from text_classifier import parse_candidates, classify_text
 
@@ -30,6 +31,9 @@ class SpeechServer:
         # ROS action servers
         self.snl_as = SimpleActionServer("speak_and_listen", SpeakAndListenAction, execute_cb=self.speak_and_listen_cb, auto_start=False)
         self.snl_as.start()
+
+        self.apn_as = SimpleActionServer("ask_person_name", AskPersonNameAction, execute_cb=self.ask_person_name_cb, auto_start=False)
+        self.apn_as.start()
 
         # ROS services
         self._rec_start_srv = rospy.Service('recording_start', Empty, self.start_recording)
@@ -93,10 +97,6 @@ class SpeechServer:
 
         rospy.loginfo("SpeakAndListen action started:")
         rospy.loginfo("Question: " + question)
-        # rospy.loginfo("Candidates:")
-        # rospy.loginfo(candidates)
-        # rospy.loginfo("Params:")
-        # rospy.loginfo(params)
 
         if question:
             self.speak(question)
@@ -138,6 +138,50 @@ class SpeechServer:
             rospy.logwarn('Aborted SpeakAndListen')
             self.speak("Sorry, I didn't get it.")
             self.snl_as.set_aborted()
+        self.stop_recording()
+
+    def ask_person_name_cb(self, goal):
+        question = goal.question
+        timeout = goal.timeout
+
+        if not question:
+            question = "What is your name?"
+
+        rospy.loginfo("AskPersonName action started:")
+        rospy.loginfo("Question: " + question)
+
+        self.speak(question)
+
+        start_time = time.time()
+        timelimit = start_time + timeout if timeout else np.inf
+
+        self.start_recording()
+        rospy.loginfo("Recording started")
+
+        while not rospy.is_shutdown() and timelimit - time.time() > 0:
+            results, timestamp = self.recorder.outputs_q.get()
+            if timestamp < start_time:
+                continue
+            print(results, timestamp)
+
+            if self.apn_as.is_preempt_requested():
+                rospy.logwarn('Preempted AskPersonName')
+                self.apn_as.set_preempted()
+                return
+
+            answer, confidence = recognise_name(list(results.values()))
+            rospy.loginfo('Answer: %s, Confidence: %s' % (answer, confidence))
+
+            if confidence > self.confidence_thresh:
+                self.speak(f"Hi {answer}, nice to meet you.")
+                apn_result = AskPersonNameResult()
+                apn_result.answer, apn_result.confidence = answer, confidence
+                self.apn_as.set_succeeded(apn_result)
+                break
+        else:   # if while loop exits without a break, i.e. no success
+            rospy.logwarn('Aborted AskPersonName')
+            self.speak("Sorry, I didn't get it.")
+            self.apn_as.set_aborted()
         self.stop_recording()
 
 

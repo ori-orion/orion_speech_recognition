@@ -16,9 +16,9 @@ import pyaudio
 from speech_recognition import AudioData, Recognizer
 import speech_recognition as sr
 
-vosk.SetLogLevel(0)
+from constants import ROOT_DIR
 
-ROOT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+vosk.SetLogLevel(0)
 
 DEFAULT_MODEL_PATH = os.path.join(ROOT_DIR, "data", "vosk-model-small-en-us-0.15")
 AUDIO_SAVE_PATH = os.path.join(ROOT_DIR, "tmp")
