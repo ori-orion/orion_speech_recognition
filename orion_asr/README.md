@@ -1,36 +1,39 @@
 # General Speech Recognition
 Allows general speech recognition using Speech to Text models and Snowboy hotword detection. 
 
-Developed by Shu Ishida - contact ishida_at_robots.ox.ac.uk for enquiries.
+Developed by Shu Ishida, Mia Mijovic and John Lee - contact ishida_at_robots.ox.ac.uk for enquiries.
 
 ## Actions
-There are two actions associated with it - `SpeakAndListen.action` and `HotwordListen.action`. The version used for the 
-RoboCup 2019 competition can be found in `ori-orion/orion_actions` repository. A copy of these actions can be found in 
+There are two actions associated with it - `SpeakAndListen.action` and `AskPersonName.action`. The version used for the 
+RoboCup 2022 competition can be found in `ori-orion/orion_actions` repository. A copy of these actions can be found in 
 `action` directory.
 
 `SpeakAndListen` action uses Google Speech to Text API (via SpeechRecognition [https://github.com/Uberi/speech_recognition]) as a primary method for speech to text transcription. When the 
 Wi-Fi is unavailable or slow, which is an expected scenario for robotics competitions, we have offline fall-back alternatives,
-which uses PocketSphinx (via SpeechRecognition) and WaveNet [https://github.com/buriburisuri/speech-to-text-wavenet]. 
+which uses [Vosk](https://alphacephei.com/vosk/). 
 Speech to text does not guarantee a perfect transcription due to noise in the arena, other people speaking at the same time, 
 and rare vocabulary / names specific to the tasks. Therefore we take a more robust approach of passing candidate sentences that we expect to hear
 and formulate the problem as a classification problem. While the performance will be better if we train it end-to-end, 
 we take a more naive but flexible approach of first performing speech to text, and then identifying the closest candidate to the generated text. 
 
-We have two algorithms for determining the closest candidate; Levenshtein and Sysnet similarity. Levenshtein measures the number of single letter changes that are required to change the candidate into the generated text. Fewer changes mean a closer match. On the other hand, the Synset approach looks at the meaning of the words to find the closest match rather than just the letter arrangement. For this reason, the synset similarity performs better in most cases.  
+We have two algorithms for determining the closest candidate; Levenshtein and Sysnet similarity. Levenshtein measures the number of single letter changes that are required to change the candidate into the generated text. Fewer changes mean a closer match. On the other hand, the Synset approach looks at the meaning of the words to find the closest match rather than just the letter arrangement. Synset works better for semantic similarities but Levenshtein works better for phonetic similarity and spelling mistakes. 
 
 Speech recognition is performed asynchronously and in parallel to speech recording; the recorded audio is streamed and when a silence 
 (determined by the RMS energy of the signal) is detected, the streaming continues but the frames before the silence is sent to the speech recogniser. Recording is done on a separate thread.
 
-`HotwordListen` action uses Snowboy [https://snowboy.kitt.ai], a cloud service that trains models that can be used for offline hotword detection. 
-Example code of how to use Snowboy can be found at: https://github.com/Kitt-AI/snowboy/tree/master/examples/Python
-Multiple hotword candidates can be passed to the action so that it would return when any one of them are detected. 
+`AskPersonName` action specialises at detecting person names.
+
+It also listens to hotwords (e.g. "hey robot" and "I'm ready") and publishes to a topic `/hotword`. It uses a hotword detector called [Porcupine](https://picovoice.ai/docs/quick-start/console-porcupine/) which is a part of the library `picovoice`. 
+Custom hotwords can be added by creating an account and downloading a custom model.
+
+The speech recorder saves outputs to the directory `tmp`.
+The speech recorder starts when you either call the `SpeakAndListen` or `AskPersonName`, and stops after completion. 
+Alternatively, you can manually start and stop recording by calling `recording_start` and `recording_stop` services with an empty message.
 
 ### Identified challenges and further work
-There were very limited choices to pre-trained speech recognition models that can be used offline. The ones that we currently use (PocketSphinx and WaveNet)
-are not very reliable and is trained on limited vocabulary, so they struggle to recognise some basic commands. 
-We worked around this problem by using speech to text for more common words and phrase, and using hotword detection for rarer vocabulary. 
-However, it may be worth looking more into more robust speech to text methods, integrating Kaldi or Julius as fall-backs, 
-whose language models that are easier to customise to specific tasks than training end-to-end models for each task. 
+Vosk works pretty well for offline speech recognition. 
+However, there are better speech recognisers released every year so it is worth looking into alternatives and replacing current methods if need be (after cross-evaluation) or adding these methods as alternative methods.
+Noise reduction, detection of door-knocking sounds and sound direction detection (using multiple microphones and applying something like independent component analysis or principal component analysis) may be a good way to do it. 
 
 ## Requirements
 

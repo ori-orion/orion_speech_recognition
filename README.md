@@ -1,21 +1,23 @@
 # ORIon Speech Recognition
 Repo for speech recognition capabilities for the ORIon robot
 
-## ORIon HRI
+## ORIon HRI (discontinued)
 Used for 2018 competition.
 Implements Speech recognition using Julius, which is built into the HSR. 
 Works offline, but requires manual customisation of language model dictionaries for each task.
 
 ## ORIon ASR
-Used for 2019 competition.
+Used for 2019-2022 competitions.
 Allows general speech recognition using Speech to Text models and Snowboy hotword detection. 
 
 `SpeakAndListen` action uses Google Speech to Text API as a primary method for speech to text transcription. When the 
 Wi-Fi is unavailable or slow, which is an expected scenario for robotics competitions, we have offline fall-back alternatives,
-which uses PocketSphinx and WaveNet. 
+which uses Vosk. 
 
-`HotwordListen` action uses Snowboy [https://snowboy.kitt.ai], a cloud service that trains models that can be used for offline hotword detection. 
-Multiple hotword candidates can be passed to the action so that it would return when any one of them are detected. 
+`AskPersonName` action specialises at detecting person names.
+
+It also listens to hotwords (e.g. "hey robot" and "I'm ready") and publishes to a topic `/hotword`. It uses a hotword detector called [Porcupine](https://picovoice.ai/docs/quick-start/console-porcupine/) which is a part of the library `picovoice`. 
+Custom hotwords can be added by creating an account and downloading a custom model.
 
 Speech to text is suited for common words and phrase, whereas hotword detection is suited for rarer vocabulary, is rapid and works offline.
 

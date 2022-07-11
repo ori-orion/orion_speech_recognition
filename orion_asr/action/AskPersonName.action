@@ -1,0 +1,12 @@
+# Define the goal
+# Question string is optional. If it is blank ("" or None), the robot just listens.
+# timeout = 0 will disable timeout
+string question
+float32 timeout
+--- 
+# Define the result
+# Answer is the sentence with <param> replaced by the most likely parameter (if any)
+string answer
+float32 confidence
+bool succeeded
+---
