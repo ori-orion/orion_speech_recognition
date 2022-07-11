@@ -17,6 +17,7 @@ from speech_recognition import AudioData, Recognizer
 import speech_recognition as sr
 
 from constants import ROOT_DIR
+from denoise import apply_denoise
 
 vosk.SetLogLevel(0)
 
@@ -37,7 +38,8 @@ def default_callback(frames, results: dict):
 
 class Recorder:
     def __init__(self, model_path=DEFAULT_MODEL_PATH, filename=None, device=None, samplerate=None, blocksize=8000,
-                 audio_path=AUDIO_SAVE_PATH, save_audio=False, **kwargs):
+                 audio_path=AUDIO_SAVE_PATH, save_audio=False, keep_frame_duration=5, denoise=True,
+                 noise_thresh=0.0, volume_amp=10, **kwargs):
         if not os.path.exists(model_path):
             if os.path.exists(model_path + ".zip"):
                 print(f"Unpacking vosk model into {model_path}")
@@ -50,6 +52,7 @@ class Recorder:
             device_info = sd.query_devices(device, 'input')
             # soundfile expects an int, sounddevice provides a float:
             samplerate = int(device_info['default_samplerate'])
+
         self.samplerate = samplerate
         self.device = device
         self.blocksize = blocksize
@@ -61,12 +64,20 @@ class Recorder:
 
         self.model = vosk.Model(model_path)
         self.r = Recognizer()
+        with sr.Microphone() as source:
+            self.r.adjust_for_ambient_noise(source, duration=3)
         self.dump_fn = open(filename, "wb") if filename else None
+        # keep frames for a minimum duration of time
+        self.keep_frames = keep_frame_duration * samplerate // blocksize
 
         if not os.path.exists(audio_path):
             os.makedirs(audio_path)
         self.audio_path = audio_path
         self.save_audio = save_audio
+
+        self.denoise = denoise
+        self.noise_thresh = noise_thresh
+        self.volume_amp = volume_amp
 
         self.keep_running = False
         self.running = False
@@ -102,13 +113,20 @@ class Recorder:
                     data = self.audio_q.get()
                     frames.append(data)
                     if rec.AcceptWaveform(data):
+                        rec.Result()
                         frame_data = b"".join(frames)
+
+                        if self.denoise:
+                            frame_data = apply_denoise(self.samplerate, frame_data, self.noise_thresh, self.volume_amp)
+
                         audio = AudioData(frame_data, self.samplerate, self.sample_width)
 
-                        vosk_res = json.loads(rec.Result())['text']
+                        vosk_rec = vosk.KaldiRecognizer(self.model, self.samplerate)
+                        vosk_rec.AcceptWaveform(frame_data)
+                        vosk_res = json.loads(vosk_rec.Result())['text']
                         try:
                             google_res = self.r.recognize_google(audio)
-                        except sr.UnknownValueError as e:
+                        except:
                             google_res = ""
                         # sphinx_res = self.r.recognize_sphinx(audio)
 
@@ -124,7 +142,8 @@ class Recorder:
                         # use results in callback
                         terminate = callback(frames, results)
 
-                        frames = []
+                        if len(frames) > self.keep_frames:
+                            frames = []
                         if terminate:
                             break
                     else:
