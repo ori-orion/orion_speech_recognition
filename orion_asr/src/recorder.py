@@ -113,17 +113,10 @@ class Recorder:
                     data = self.audio_q.get()
                     frames.append(data)
                     if rec.AcceptWaveform(data):
-                        rec.Result()
                         frame_data = b"".join(frames)
-
-                        if self.denoise:
-                            frame_data = apply_denoise(self.samplerate, frame_data, self.noise_thresh, self.volume_amp)
-
                         audio = AudioData(frame_data, self.samplerate, self.sample_width)
 
-                        vosk_rec = vosk.KaldiRecognizer(self.model, self.samplerate)
-                        vosk_rec.AcceptWaveform(frame_data)
-                        vosk_res = json.loads(vosk_rec.Result())['text']
+                        vosk_res = json.loads(rec.Result())['text']
                         try:
                             google_res = self.r.recognize_google(audio)
                         except:
