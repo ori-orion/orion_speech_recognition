@@ -15,18 +15,16 @@ def recognise_name(transcriptions: List[str]):
     found_names = []
     for trans in transcriptions:
         for word in trans.split(" "):
-            if word.capitalize() in NAMES:
-                found_names.append(word.capitalize())
+            word = word.capitalize()
+            if word in NAMES:
+                found_names.append(word)
 
     if found_names:
         name = found_names[0]
         confidence = 1.0
     else:
         name = check_for_name(transcriptions)
-        if(name == ''):
-            confidence = 0.0
-        else:
-            confidence = 0.9
+        confidence = 0.9 if name else 0.0
     return name, confidence
 
 
