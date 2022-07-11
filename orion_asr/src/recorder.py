@@ -103,7 +103,6 @@ class Recorder:
                     frames.append(data)
                     if rec.AcceptWaveform(data):
                         frame_data = b"".join(frames)
-                        frames = []
                         audio = AudioData(frame_data, self.samplerate, self.sample_width)
 
                         vosk_res = json.loads(rec.Result())['text']
@@ -124,6 +123,8 @@ class Recorder:
 
                         # use results in callback
                         terminate = callback(frames, results)
+
+                        frames = []
                         if terminate:
                             break
                     else:
