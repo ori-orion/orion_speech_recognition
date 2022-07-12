@@ -9,7 +9,7 @@ def check_for_name(transcripts):
         tokens = [word.lower() if word.isalpha() or word == "'m" else word for word in tokens]
 
         name = ''
-        if len(tokens) <= 2:
+        if 1 <= len(tokens) <= 2:
             # If they only say one word that word is their name
             name = tokens[0].capitalize()
         else:
