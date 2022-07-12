@@ -17,7 +17,6 @@ from speech_recognition import AudioData, Recognizer
 import speech_recognition as sr
 
 from constants import ROOT_DIR
-from denoise import apply_denoise
 
 vosk.SetLogLevel(0)
 
