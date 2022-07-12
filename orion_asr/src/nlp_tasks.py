@@ -5,7 +5,8 @@ from constants import DATA_DIR
 
 from name_recognition import check_for_name
 
-NAMES_FILE = os.path.join(DATA_DIR, "names.txt")
+# NAMES_FILE = os.path.join(DATA_DIR, "names.txt")
+NAMES_FILE = os.path.join(DATA_DIR, "names_robocup2022.txt")
 
 with open(NAMES_FILE, "r") as f:
     NAMES = f.read().strip().split("\n")
@@ -23,8 +24,10 @@ def recognise_name(transcriptions: List[str]):
         name = found_names[0]
         confidence = 1.0
     else:
-        name = check_for_name(transcriptions)
-        confidence = 0.9 if name else 0.0
+        name = ""
+        confidence = 0.0
+        # name = check_for_name(transcriptions)
+        # confidence = 0.9 if name else 0.0
     return name, confidence
 
 
