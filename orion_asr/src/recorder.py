@@ -17,6 +17,7 @@ from speech_recognition import AudioData, Recognizer
 import speech_recognition as sr
 
 from constants import ROOT_DIR
+from denoise import apply_denoise
 
 vosk.SetLogLevel(0)
 
@@ -113,6 +114,8 @@ class Recorder:
                     frames.append(data)
                     if rec.AcceptWaveform(data):
                         frame_data = b"".join(frames)
+                        if self.denoise:
+                            frame_data = apply_denoise(self.samplerate, frame_data, self.noise_thresh, self.volume_amp)
                         audio = AudioData(frame_data, self.samplerate, self.sample_width)
 
                         vosk_res = json.loads(rec.Result())['text']
