@@ -111,37 +111,15 @@ class Recorder:
                 self.running = True
                 while self.keep_running:
                     data = self.audio_q.get()
+                    if self.denoise:
+                        data = apply_denoise(self.samplerate, data, self.noise_thresh, self.volume_amp)
                     frames.append(data)
                     if rec.AcceptWaveform(data):
-                        frame_data = b"".join(frames)
-                        audio = AudioData(frame_data, self.samplerate, self.sample_width)
-
-                        vosk_res = json.loads(rec.Result())['text']
-                        try:
-                            google_res = self.r.recognize_google(audio)
-                        except:
-                            google_res = ""
-                        # sphinx_res = self.r.recognize_sphinx(audio)
-
-                        if self.save_audio:
-                            # save audio file
-                            th = threading.Thread(target=self.save_to_wave, args=(audio, vosk_res))
-                            th.start()
-
-                        results = {"vosk": vosk_res, "google": google_res}
-
-                        self.outputs_q.put((results, time.time()))
-
-                        # use results in callback
-                        terminate = callback(frames, results)
-
+                        th = threading.Thread(target=self.process_audio, args=(rec, list(frames), callback))
+                        th.start()
                         if len(frames) > self.keep_frames:
                             frames = []
-                        if terminate:
-                            break
-                    else:
-                        # print(rec.PartialResult())
-                        pass
+
         except Exception as e:
             print(e)
         self.keep_running = False
@@ -154,11 +132,37 @@ class Recorder:
             print(status, file=sys.stderr)
         self.audio_q.put(bytes(indata))
 
+    def process_audio(self, rec, frames, callback):
+        frame_data = b"".join(frames)
+        audio = AudioData(frame_data, self.samplerate, self.sample_width)
+
+        vosk_res = json.loads(rec.Result())['text']
+        try:
+            google_res = self.r.recognize_google(audio)
+        except:
+            google_res = ""
+        # sphinx_res = self.r.recognize_sphinx(audio)
+
+        if self.save_audio:
+            # save audio file
+            self.save_to_wave(audio, vosk_res)
+
+        results = {"vosk": vosk_res, "google": google_res}
+
+        self.outputs_q.put((results, time.time()))
+
+        # use results in callback
+        terminate = callback(frames, results)
+
+        if terminate:
+            self.keep_running = False
+
+        sys.exit(0)
+
     def save_to_wave(self, audio: AudioData, text):
         text = '_'.join(text.split(' '))
         with open(os.path.join(self.audio_path, f"{int(time.time())}__{text}.wav"), "wb") as f:
             f.write(audio.get_wav_data())
-        sys.exit(0)
 
 
 def int_or_str(text):
