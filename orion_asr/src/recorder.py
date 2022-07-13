@@ -119,18 +119,19 @@ class Recorder:
                         audio = AudioData(frame_data, self.samplerate, self.sample_width)
 
                         vosk_res = json.loads(rec.Result())['text']
-                        try:
-                            google_res = self.r.recognize_google(audio)
-                        except:
-                            google_res = ""
-                        # sphinx_res = self.r.recognize_sphinx(audio)
+                        # try:
+                        #     google_res = self.r.recognize_google(audio)
+                        # except:
+                        #     google_res = ""
+                        # # sphinx_res = self.r.recognize_sphinx(audio)
 
                         if self.save_audio:
                             # save audio file
                             th = threading.Thread(target=self.save_to_wave, args=(audio, vosk_res))
                             th.start()
 
-                        results = {"vosk": vosk_res, "google": google_res}
+                        # results = {"vosk": vosk_res, "google": google_res}
+                        results = {"vosk": vosk_res}
 
                         self.outputs_q.put((results, time.time()))
 
