@@ -1,0 +1,1 @@
+while true; do amixer -D pulse sset Master 130% ;date ; sleep 10; done
