@@ -5,7 +5,10 @@ import argparse
 import sounddevice as sd
 import vosk
 import sys
+from zipfile import ZipFile
 
+
+from constants import ROOT_DIR
 
 q = queue.Queue()
 
@@ -25,6 +28,8 @@ def main():
     parser = argparse.ArgumentParser(add_help=False)
     args, remaining = parser.parse_known_args()
 
+    MODEL_PATH = os.path.join(ROOT_DIR, "data", "vosk-model-small-en-us-0.15")
+
     parser.add_argument('-m','--model',type=str,metavar='MODEL_PATH',help='Path to model')
     parser.add_argument('-r','--samplerate',type=int,help='sampling rate')
     parser.add_argument('-d','--device',type=intORstr,help='input device (numeric ID or substring')
@@ -33,11 +38,14 @@ def main():
     args = parser.parse_args(remaining)
 
     try:
-        if args.model is None:
-            args.model = "vosk_model"
-        if not os.path.exists(args.model):
-            print("Please download a model for your language from https://alphacephei.com/vosk/models and unpack as 'model' in the current folder.")
-            parser.exit(0)
+        if not os.path.exists(MODEL_PATH):
+            if os.path.exists(MODEL_PATH + ".zip"):
+                print(f"Unpacking vosk model into {MODEL_PATH}")
+                with ZipFile(MODEL_PATH + ".zip", "r") as f:
+                    f.extractall(os.path.join(MODEL_PATH, ".."))
+            else:
+                raise Exception(f"""Please download a model for your language from https://alphacephei.com/vosk/models
+                and unpack at '{MODEL_PATH}'""")
         if args.samplerate is None:
             device_info = sd.query_devices(args.device, 'input')
             args.samplerate = int(device_info['default_samplerate'])
