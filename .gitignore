@@ -114,3 +114,4 @@ orion_asr/data/vosk_model
 vosk-model-small-en-us-0.15
 
 sandbox
+.DS_Store
