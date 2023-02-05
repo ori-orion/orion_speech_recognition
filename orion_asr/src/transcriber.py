@@ -22,7 +22,7 @@ def transcribe():
         exit(1)
 
     model = Model(DEFAULT_MODEL_PATH)
-    rec - KaldiRecognizer(model, wf.getframerate())
+    rec = KaldiRecognizer(model, wf.getframerate())
     rec.SetWords(True)
 
     while True:
