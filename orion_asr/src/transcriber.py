@@ -29,14 +29,9 @@ def transcribe():
         data = wf.readframes(100)
         if len(data) == 0:
             break
-        """
         if rec.AcceptWaveform(data):
             print(rec.Result())
-        else:
-            print(rec.PartialResult())
-        """
 
-    print(rec.FinalResult())
 
 if __name__ == "__main__":
     transcribe()
