@@ -28,12 +28,6 @@ class SpeechServer:
         # Recorder
         self.recorder = Recorder(save_audio=True)
 
-        # ROS action servers
-        self.snl_as = SimpleActionServer("speak_and_listen", SpeakAndListenAction, execute_cb=self.speak_and_listen_cb, auto_start=False)
-        self.snl_as.start()
-
-        self.apn_as = SimpleActionServer("ask_person_name", AskPersonNameAction, execute_cb=self.ask_person_name_cb, auto_start=False)
-        self.apn_as.start()
 
         # ROS services
         self._rec_start_srv = rospy.Service('recording_start', Empty, self.start_recording)
@@ -52,6 +46,13 @@ class SpeechServer:
         self.detector = PorcupineHotwordDetector(keywords=("hey robot", "i'm ready"))
         self.detector.start(self._hotword_listen_cb)
         rospy.loginfo("Hotword detector started:")
+
+        # ROS action servers
+        self.snl_as = SimpleActionServer("speak_and_listen", SpeakAndListenAction, execute_cb=self.speak_and_listen_cb, auto_start=False)
+        self.snl_as.start()
+
+        self.apn_as = SimpleActionServer("ask_person_name", AskPersonNameAction, execute_cb=self.ask_person_name_cb, auto_start=False)
+        self.apn_as.start()
 
         rospy.on_shutdown(self.detector.stop)
 
