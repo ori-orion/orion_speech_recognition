@@ -5,10 +5,10 @@ import io
 import numpy as np
 
 
-def apply_denoise(rate, frame_data, noise_thresh=0.0, volume_amp=10):
+def apply_denoise(rate, frame_data, noise_thresh=1.5, volume_amp=10):
     data = np.frombuffer(frame_data, dtype=np.int16)
 
-    data = np.array(nr.reduce_noise(y=data, sr=rate, n_std_thresh_stationary=noise_thresh), dtype=float)
+    data = np.array(nr.reduce_noise(y=data, sr=rate, stationary=False, prop_decrease=1.0, thresh_n_mult_nonstationary=2, sigmoid_slope_nonstationary=10, chunk_size=600000, n_std_thresh_stationary=noise_thresh), dtype=float)
     max_range = np.iinfo(np.int16).max
     data = np.asarray(np.tanh(data * volume_amp / max_range) * max_range, dtype=np.int16)
 
