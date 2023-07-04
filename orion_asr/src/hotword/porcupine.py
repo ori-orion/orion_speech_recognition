@@ -37,6 +37,7 @@ def default_callback(hotword: str):
 
 
 PORCUPINE_ACCESS_KEY = "DDFaK7VyCjcyM7oXmhm3kAagqfC6dISOlPC5ylM0QeLsueVN+RT/mg=="
+PORCUPINE_ACCESS_KEY = "hkg5IG1pqXDyB/k9fWOkTW+i1lJwyKkVDZU/J6h2/H8fzYxjcvSsyQ=="
 
 
 class PorcupineHotwordDetector:
