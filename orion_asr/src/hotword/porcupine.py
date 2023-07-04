@@ -51,8 +51,8 @@ class PorcupineHotwordDetector:
             keywords=None,
             sensitivities=None,
             access_key=PORCUPINE_ACCESS_KEY,
-            library_path=pvporcupine.LIBRARY_PATH,
-            model_path=pvporcupine.MODEL_PATH,
+            library_path="/home/ori/.local/lib/python3.8/site-packages/pvporcupine/lib/linux/x86_64/libpv_porcupine.so",
+            model_path="/home/ori/.local/lib/python3.8/site-packages/pvporcupine/lib/common/porcupine_params.pv",
             input_device_index=-1,
             output_path=None):
 
