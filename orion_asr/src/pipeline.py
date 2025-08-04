@@ -16,6 +16,22 @@ MODEL_LIST = ["google","vosk","whisper"]
 TMP_DIR = os.path.join(ROOT_DIR,"tmp")
 
 class Pipeline:
+    """Testing pipeline to compare voice recognition API performance.
+    
+    :param filename:
+    Attributes
+    ----------
+    filename : str
+        Name of file (exluding extension) to parse. Any transcript files created will have carries this name.
+    
+    **kwargs :
+
+    Methods
+    --------
+    transcribe_auto()
+        Auto transcribes based
+    """
+
     def __init__(self, filename, **kwargs):
         self.AUDIO_FILE = os.path.join(TMP_DIR, filename+".wav")
         self.filename = filename
